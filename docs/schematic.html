@@ -1,0 +1,344 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Esquemático TTGO Macropad</title>
+<style>
+/* Layout: columna central del ESP32 flanqueada por botones (izq) y encoders
+   (der), cada lado con su propio bus de GND que vuelve a la placa. */
+:root {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --ink: #1f2d3d;
+  --muted: #7c8a99;
+  --signal: #2f6fed;
+  --copper: #ab6a28;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1620;
+    --surface: #182230;
+    --ink: #e7edf5;
+    --muted: #7e8fa1;
+    --signal: #6ba1ff;
+    --copper: #e0973f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1620;
+  --surface: #182230;
+  --ink: #e7edf5;
+  --muted: #7e8fa1;
+  --signal: #6ba1ff;
+  --copper: #e0973f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px;
+}
+main { max-width: 980px; margin: 0 auto; }
+
+h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(1.3rem, 1rem + 1.4vw, 1.9rem);
+  font-weight: 600;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.subtitle { color: var(--muted); margin: 0 0 28px; max-width: 65ch; line-height: 1.5; }
+.subtitle strong { color: var(--ink); }
+
+figure { margin: 0 0 18px; }
+.diagram-frame {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 10px;
+  padding: 10px;
+  overflow-x: auto;
+}
+svg { display: block; width: 100%; height: auto; min-width: 760px; }
+svg text { font-family: var(--font-mono); fill: var(--ink); }
+figcaption { color: var(--muted); font-size: 0.85rem; margin-top: 10px; line-height: 1.5; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 18px 0 34px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 26px; height: 0; border-top: 3px solid; flex: none; }
+.swatch.dot { width: 10px; height: 10px; border: none; border-radius: 50%; }
+
+h2 {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 36px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); white-space: nowrap; }
+th { font-family: var(--font-mono); font-weight: 600; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.03em; text-transform: uppercase; }
+td.mono, th.mono { font-family: var(--font-mono); }
+tr.integrated td { color: var(--muted); }
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--signal) 14%, transparent);
+  color: var(--signal);
+}
+tr.integrated .tag { background: color-mix(in srgb, var(--muted) 16%, transparent); color: var(--muted); }
+
+ul.parts, ul.notes { margin: 0; padding-left: 1.2em; line-height: 1.6; }
+ul.parts li, ul.notes li { margin-bottom: 6px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; }
+
+footer { margin-top: 40px; color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
+footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(--ink) 8%, transparent); padding: 2px 5px; border-radius: 4px; }
+</style>
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<main>
+  <h1>Esquemático — TTGO Macropad</h1>
+  <p class="subtitle">
+    Qué va a cada <strong>GPIO</strong> del TTGO T-Display para los 6 botones y
+    2 encoders. Los botones <strong>BTN0</strong> y <strong>BTN1</strong> ya
+    están integrados en la placa — el resto se cablea a protoboard, todo
+    contra el mismo bus de <strong>GND</strong>.
+  </p>
+
+  <figure>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 1200 780" role="img"
+           aria-label="Esquemático de conexión: TTGO T-Display al centro, 6 botones a la izquierda contra un bus de GND, 2 encoders rotativos a la derecha contra otro bus de GND.">
+        <defs>
+          <g id="sw" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="-30" y1="0" x2="-12" y2="0"/>
+            <line x1="12" y1="0" x2="30" y2="0"/>
+            <circle cx="-30" cy="0" r="4" fill="currentColor" stroke="none"/>
+            <circle cx="30" cy="0" r="4" fill="currentColor" stroke="none"/>
+            <line x1="-12" y1="0" x2="-12" y2="-12"/>
+            <line x1="12" y1="0" x2="12" y2="-12"/>
+            <line x1="-15" y1="-12" x2="18" y2="-19"/>
+          </g>
+          <g id="gnd" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="0" y1="0" x2="0" y2="14"/>
+            <line x1="-17" y1="14" x2="17" y2="14"/>
+            <line x1="-10" y1="23" x2="10" y2="23"/>
+            <line x1="-4" y1="32" x2="4" y2="32"/>
+          </g>
+          <g id="dot"><circle cx="0" cy="0" r="4.5" fill="currentColor"/></g>
+        </defs>
+
+        <!-- MCU -->
+        <rect x="480" y="90" width="200" height="570" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="580" y="152" text-anchor="middle" font-size="22" font-weight="600">TTGO T-Display</text>
+        <line x1="512" y1="168" x2="648" y2="168" stroke="var(--ink)" stroke-width="1" opacity="0.35"/>
+        <text x="580" y="190" text-anchor="middle" font-size="13" fill="var(--muted)">ESP32-D0WDQ6-V3</text>
+        <text x="580" y="208" text-anchor="middle" font-size="12" fill="var(--muted)">sin USB nativo — control vía app</text>
+
+        <!-- ============ LADO IZQUIERDO: BOTONES ============ -->
+        <!-- Bus GND izquierdo -->
+        <line x1="90" y1="140" x2="90" y2="700" stroke="var(--copper)" stroke-width="4"/>
+        <use href="#gnd" x="90" y="700" color="var(--copper)"/>
+        <text x="90" y="754" text-anchor="middle" font-size="13" font-weight="600" fill="var(--copper)">GND</text>
+
+        <!-- fila GND -->
+        <line x1="480" y1="140" x2="90" y2="140" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="480" y="140" color="var(--copper)"/>
+        <use href="#dot" x="90" y="140" color="var(--copper)"/>
+        <text x="285" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="var(--copper)">GND</text>
+
+        <!-- BTN0 · GPIO0 (integrado) -->
+        <g color="var(--muted)" stroke-dasharray="6 5">
+          <line x1="480" y1="220" x2="330" y2="220" stroke="currentColor" stroke-width="3"/>
+          <line x1="270" y1="220" x2="90" y2="220" stroke="currentColor" stroke-width="3"/>
+        </g>
+        <use href="#sw" x="300" y="220" color="var(--muted)"/>
+        <use href="#dot" x="480" y="220" color="var(--muted)"/>
+        <use href="#dot" x="90" y="220" color="var(--muted)"/>
+        <text x="390" y="206" text-anchor="middle" font-size="13" font-weight="600" fill="var(--muted)">GPIO0</text>
+        <text x="300" y="242" text-anchor="middle" font-size="11" fill="var(--muted)">BTN0 (integrado)</text>
+
+        <!-- BTN1 · GPIO35 (integrado) -->
+        <g color="var(--muted)" stroke-dasharray="6 5">
+          <line x1="480" y1="300" x2="330" y2="300" stroke="currentColor" stroke-width="3"/>
+          <line x1="270" y1="300" x2="90" y2="300" stroke="currentColor" stroke-width="3"/>
+        </g>
+        <use href="#sw" x="300" y="300" color="var(--muted)"/>
+        <use href="#dot" x="480" y="300" color="var(--muted)"/>
+        <use href="#dot" x="90" y="300" color="var(--muted)"/>
+        <text x="390" y="286" text-anchor="middle" font-size="13" font-weight="600" fill="var(--muted)">GPIO35</text>
+        <text x="300" y="322" text-anchor="middle" font-size="11" fill="var(--muted)">BTN1 (integrado)</text>
+
+        <!-- BTN2 · GPIO32 -->
+        <line x1="480" y1="380" x2="330" y2="380" stroke="var(--signal)" stroke-width="3"/>
+        <line x1="270" y1="380" x2="90" y2="380" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="300" y="380" color="var(--signal)"/>
+        <use href="#dot" x="480" y="380" color="var(--signal)"/>
+        <use href="#dot" x="90" y="380" color="var(--copper)"/>
+        <text x="390" y="366" text-anchor="middle" font-size="13" font-weight="600">GPIO32</text>
+        <text x="300" y="402" text-anchor="middle" font-size="11" fill="var(--muted)">BTN2</text>
+
+        <!-- BTN3 · GPIO33 -->
+        <line x1="480" y1="460" x2="330" y2="460" stroke="var(--signal)" stroke-width="3"/>
+        <line x1="270" y1="460" x2="90" y2="460" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="300" y="460" color="var(--signal)"/>
+        <use href="#dot" x="480" y="460" color="var(--signal)"/>
+        <use href="#dot" x="90" y="460" color="var(--copper)"/>
+        <text x="390" y="446" text-anchor="middle" font-size="13" font-weight="600">GPIO33</text>
+        <text x="300" y="482" text-anchor="middle" font-size="11" fill="var(--muted)">BTN3</text>
+
+        <!-- BTN4 · GPIO25 -->
+        <line x1="480" y1="540" x2="330" y2="540" stroke="var(--signal)" stroke-width="3"/>
+        <line x1="270" y1="540" x2="90" y2="540" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="300" y="540" color="var(--signal)"/>
+        <use href="#dot" x="480" y="540" color="var(--signal)"/>
+        <use href="#dot" x="90" y="540" color="var(--copper)"/>
+        <text x="390" y="526" text-anchor="middle" font-size="13" font-weight="600">GPIO25</text>
+        <text x="300" y="562" text-anchor="middle" font-size="11" fill="var(--muted)">BTN4</text>
+
+        <!-- BTN5 · GPIO26 -->
+        <line x1="480" y1="620" x2="330" y2="620" stroke="var(--signal)" stroke-width="3"/>
+        <line x1="270" y1="620" x2="90" y2="620" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="300" y="620" color="var(--signal)"/>
+        <use href="#dot" x="480" y="620" color="var(--signal)"/>
+        <use href="#dot" x="90" y="620" color="var(--copper)"/>
+        <text x="390" y="606" text-anchor="middle" font-size="13" font-weight="600">GPIO26</text>
+        <text x="300" y="642" text-anchor="middle" font-size="11" fill="var(--muted)">BTN5</text>
+
+        <!-- ============ LADO DERECHO: ENCODERS ============ -->
+        <line x1="1090" y1="190" x2="1090" y2="700" stroke="var(--copper)" stroke-width="4"/>
+        <use href="#gnd" x="1090" y="700" color="var(--copper)"/>
+        <text x="1090" y="754" text-anchor="middle" font-size="13" font-weight="600" fill="var(--copper)">GND</text>
+
+        <!-- fila GND -->
+        <line x1="680" y1="190" x2="1090" y2="190" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="680" y="190" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="190" color="var(--copper)"/>
+        <text x="885" y="178" text-anchor="middle" font-size="13" font-weight="600" fill="var(--copper)">GND</text>
+
+        <!-- ENC0 -->
+        <rect x="800" y="260" width="140" height="170" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="870" y="282" text-anchor="middle" font-size="15" font-weight="600">ENC0</text>
+        <text x="870" y="298" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
+        <circle cx="870" cy="360" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="870" y1="360" x2="884" y2="347" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+
+        <line x1="680" y1="320" x2="800" y2="320" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="320" color="var(--signal)"/>
+        <use href="#dot" x="800" y="320" color="var(--signal)"/>
+        <text x="740" y="306" text-anchor="middle" font-size="13" font-weight="600">GPIO27</text>
+        <text x="812" y="315" font-size="10.5" fill="var(--muted)">CLK</text>
+
+        <line x1="680" y1="400" x2="800" y2="400" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="400" color="var(--signal)"/>
+        <use href="#dot" x="800" y="400" color="var(--signal)"/>
+        <text x="740" y="386" text-anchor="middle" font-size="13" font-weight="600">GPIO14</text>
+        <text x="812" y="395" font-size="10.5" fill="var(--muted)">DT</text>
+
+        <line x1="940" y1="360" x2="1090" y2="360" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="360" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="360" color="var(--copper)"/>
+        <text x="952" y="353" font-size="10.5" fill="var(--copper)">GND</text>
+
+        <!-- ENC1 -->
+        <rect x="800" y="470" width="140" height="170" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="870" y="492" text-anchor="middle" font-size="15" font-weight="600">ENC1</text>
+        <text x="870" y="508" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
+        <circle cx="870" cy="570" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="870" y1="570" x2="884" y2="557" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+
+        <line x1="680" y1="530" x2="800" y2="530" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="530" color="var(--signal)"/>
+        <use href="#dot" x="800" y="530" color="var(--signal)"/>
+        <text x="740" y="516" text-anchor="middle" font-size="13" font-weight="600">GPIO21</text>
+        <text x="812" y="525" font-size="10.5" fill="var(--muted)">CLK</text>
+
+        <line x1="680" y1="610" x2="800" y2="610" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="610" color="var(--signal)"/>
+        <use href="#dot" x="800" y="610" color="var(--signal)"/>
+        <text x="740" y="596" text-anchor="middle" font-size="13" font-weight="600">GPIO22</text>
+        <text x="812" y="605" font-size="10.5" fill="var(--muted)">DT</text>
+
+        <line x1="940" y1="570" x2="1090" y2="570" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="570" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="570" color="var(--copper)"/>
+        <text x="952" y="563" font-size="10.5" fill="var(--copper)">GND</text>
+      </svg>
+    </div>
+    <figcaption>
+      El ESP32 del T-Display al centro, con los 6 botones contra el bus de GND
+      de la izquierda y los 2 encoders EC11 contra el de la derecha. BTN0/BTN1
+      (gris punteado) ya están soldados en la placa; el resto se cablea.
+    </figcaption>
+  </figure>
+
+  <div class="legend">
+    <span><i class="swatch" style="border-color:var(--signal)"></i> GPIO a cablear</span>
+    <span><i class="swatch" style="border-color:var(--muted); border-top-style:dashed"></i> Ya integrado en la placa</span>
+    <span><i class="swatch" style="border-color:var(--copper)"></i> Bus de GND común</span>
+    <span><i class="swatch dot" style="background:var(--ink)"></i> Pin / unión</span>
+  </div>
+
+  <h2>Tabla de conexión</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>GPIO</th><th>Componente</th><th>Otro terminal</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr class="integrated"><td class="mono">GPIO0</td><td><span class="tag">BTN0</span></td><td>GND</td><td>Integrado. No mantener apretado al resetear/conectar USB.</td></tr>
+        <tr class="integrated"><td class="mono">GPIO35</td><td><span class="tag">BTN1</span></td><td>GND</td><td>Integrado.</td></tr>
+        <tr><td class="mono">GPIO32</td><td><span class="tag">BTN2</span></td><td>GND</td><td>Pulsador nuevo.</td></tr>
+        <tr><td class="mono">GPIO33</td><td><span class="tag">BTN3</span></td><td>GND</td><td>Pulsador nuevo.</td></tr>
+        <tr><td class="mono">GPIO25</td><td><span class="tag">BTN4</span></td><td>GND</td><td>Pulsador nuevo.</td></tr>
+        <tr><td class="mono">GPIO26</td><td><span class="tag">BTN5</span></td><td>GND</td><td>Pulsador nuevo.</td></tr>
+        <tr><td class="mono">GPIO27</td><td><span class="tag">ENC0 · CLK</span></td><td>GND (del encoder)</td><td>Encoder 0, señal A.</td></tr>
+        <tr><td class="mono">GPIO14</td><td><span class="tag">ENC0 · DT</span></td><td>GND (del encoder)</td><td>Encoder 0, señal B.</td></tr>
+        <tr><td class="mono">GPIO21</td><td><span class="tag">ENC1 · CLK</span></td><td>GND (del encoder)</td><td>Encoder 1, señal A.</td></tr>
+        <tr><td class="mono">GPIO22</td><td><span class="tag">ENC1 · DT</span></td><td>GND (del encoder)</td><td>Encoder 1, señal B.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h2>Lista de compras</h2>
+      <ul class="parts">
+        <li>4× pulsador táctil momentáneo (6×6mm, 4 pines) — BTN0/BTN1 ya están en la placa.</li>
+        <li>2× encoder rotativo EC11 (solo se usan CLK/DT; el push-button del eje queda sin cablear por ahora).</li>
+        <li>Cable dupont hembra-hembra o protoboard, según el montaje.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Notas</h2>
+      <ul class="notes">
+        <li>Todos los pulsadores van a <strong>GND</strong> usando el pull-up interno del ESP32 — no hace falta resistencia externa.</li>
+        <li>Los encoders usan la misma lógica de pull-up interno vía <code style="font-family:var(--font-mono)">ESP32Encoder</code>.</li>
+        <li>GPIO0 es también el botón de boot: si lo mantenés apretado al conectar el USB, la placa entra en modo flasheo en vez de arrancar normal.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    Detalle completo y lista de pines libres para el futuro en
+    <code>docs/wiring.md</code>, dentro de
+    <code>ttgo-macropad/</code>.
+  </footer>
+</main>

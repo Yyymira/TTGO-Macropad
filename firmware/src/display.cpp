@@ -1,0 +1,133 @@
+#include "display.h"
+#include "config.h"
+
+#include <TFT_eSPI.h>
+
+static TFT_eSPI tft = TFT_eSPI();
+static DisplayMode currentMode = DisplayMode::Idle;
+
+static int statCpu = -1, statRam = -1, statCpuTemp = -1, statGpu = -1, statGpuTemp = -1;
+static uint8_t layerIndex = 0;
+static String layerName = "";
+static String layerLabels[NUM_BUTTONS];
+
+static void drawBar(int x, int y, int w, int h, int pct, uint16_t color) {
+    pct = constrain(pct, 0, 100);
+    tft.drawRect(x, y, w, h, TFT_DARKGREY);
+    int fillW = (w - 2) * pct / 100;
+    tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_BLACK);
+    if (fillW > 0) tft.fillRect(x + 1, y + 1, fillW, h - 2, color);
+}
+
+static uint16_t gaugeColor(int pct) {
+    if (pct < 60) return TFT_GREEN;
+    if (pct < 85) return TFT_ORANGE;
+    return TFT_RED;
+}
+
+// Gauge tipo velocímetro: arco de 270° que abre hacia abajo (de 225° a 135°,
+// en sentido horario pasando por arriba), con el % y una etiqueta al centro.
+static void drawGauge(int cx, int cy, int r, int ir, int pct, const char *label) {
+    pct = constrain(pct, 0, 100);
+    const uint32_t trackStart = 225, trackEnd = 135;
+    tft.drawArc(cx, cy, r, ir, trackStart, trackEnd, TFT_DARKGREY, TFT_BLACK, true);
+
+    if (pct > 0) {
+        float rawEnd = trackStart + (pct / 100.0f) * 270.0f;
+        uint32_t valueEnd = (uint32_t)(rawEnd >= 360 ? rawEnd - 360 : rawEnd);
+        tft.drawArc(cx, cy, r, ir, trackStart, valueEnd, gaugeColor(pct), TFT_BLACK, true);
+    }
+
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextFont(4);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString(String(pct) + "%", cx, cy - 4);
+    tft.setTextFont(2);
+    tft.setTextColor(TFT_SILVER, TFT_BLACK);
+    tft.drawString(label, cx, cy + 22);
+    tft.setTextDatum(TL_DATUM);
+}
+
+static void renderIdle() {
+    tft.fillScreen(TFT_BLACK);
+
+    if (statCpu < 0) {
+        tft.setTextDatum(TL_DATUM);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextFont(2);
+        tft.drawString("Esperando datos...", 8, 60);
+        return;
+    }
+
+    drawGauge(58, 46, 40, 30, statCpu, "CPU");
+    drawGauge(182, 46, 40, 30, statGpu, "GPU");
+
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextFont(2);
+    tft.drawString("RAM", 4, 98);
+    drawBar(38, 96, 108, 14, statRam, TFT_CYAN);
+    tft.drawString(String(statRam) + "%", 150, 98);
+
+    tft.drawString("CPU " + String(statCpuTemp) + "C", 182, 96);
+    tft.drawString("GPU " + String(statGpuTemp) + "C", 182, 114);
+}
+
+static void renderLayer() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+    tft.setTextFont(2);
+    tft.drawString("Capa " + String(layerIndex) + ": " + layerName, 8, 4);
+
+    const int cols = 3, rows = 2;
+    const int cellW = 240 / cols, cellH = (135 - 24) / rows;
+    const int top = 24;
+
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+        int col = i % cols, row = i / cols;
+        int x = col * cellW, y = top + row * cellH;
+        tft.drawRect(x, y, cellW, cellH, TFT_DARKGREY);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawString(layerLabels[i], x + cellW / 2, y + cellH / 2);
+    }
+    tft.setTextDatum(TL_DATUM);
+}
+
+static void render() {
+    if (currentMode == DisplayMode::Idle) {
+        renderIdle();
+    } else {
+        renderLayer();
+    }
+}
+
+void displaySetup() {
+    tft.init();
+    tft.setRotation(1);  // landscape, 240x135
+    tft.fillScreen(TFT_BLACK);
+    render();
+}
+
+void displaySetMode(DisplayMode mode) {
+    if (mode == currentMode) return;
+    currentMode = mode;
+    render();
+}
+
+void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp) {
+    statCpu = cpu;
+    statRam = ram;
+    statCpuTemp = cpuTemp;
+    statGpu = gpu;
+    statGpuTemp = gpuTemp;
+    if (currentMode == DisplayMode::Idle) render();
+}
+
+void displaySetLayer(uint8_t index, const String &name, const String labels[6]) {
+    layerIndex = index;
+    layerName = name;
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) layerLabels[i] = labels[i];
+    if (currentMode == DisplayMode::Layer) render();
+}

@@ -1,0 +1,4 @@
+# psutil, evdev y PySide6 ya vienen instalados a nivel sistema en Fedora
+# (python3-psutil, python3-evdev, python3-pyside6) y el venv del proyecto
+# se crea con --system-site-packages para reusarlos. Solo falta pyserial.
+pyserial

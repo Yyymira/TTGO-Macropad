@@ -1,0 +1,11 @@
+# Entornos virtuales de Python
+.venv/
+__pycache__/
+*.pyc
+
+# Build artifacts de PlatformIO
+firmware/.pio/
+
+# Config local de runtime de la app (queda en ~/.config, no en el repo,
+# pero por si alguna vez se genera acá adentro)
+*.local.json
