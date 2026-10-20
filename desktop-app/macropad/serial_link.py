@@ -1,13 +1,13 @@
 """Conexión serie con la placa TTGO: detecta el puerto, reconecta solo,
 lee líneas JSON del device y permite mandarle comandos."""
 
-import glob
 import json
 import threading
 import time
 
 import serial
 from PySide6.QtCore import QObject, Signal
+from serial.tools import list_ports
 
 
 class SerialLink(QObject):
@@ -56,7 +56,9 @@ class SerialLink(QObject):
     def _find_port(self) -> str | None:
         if self._port:
             return self._port
-        candidates = sorted(glob.glob("/dev/ttyACM*") + glob.glob("/dev/ttyUSB*"))
+        # list_ports enumera /dev/ttyACM*, /dev/ttyUSB* en Linux y COM* en
+        # Windows por igual, así que esto sirve para los dos sistemas.
+        candidates = sorted(p.device for p in list_ports.comports())
         return candidates[0] if candidates else None
 
     def _run(self) -> None:

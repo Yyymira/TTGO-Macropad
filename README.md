@@ -49,11 +49,16 @@ python3 -m venv .venv          # si no existe todavía
 
 ## App de escritorio (`desktop-app/`)
 
-Python + PySide6. Usa `psutil` (stats), `evdev` (inyección de teclas) y
-`pyserial` (comunicación con la placa). En Fedora, `psutil`/`evdev`/`PySide6`
-ya vienen como paquetes de sistema (`python3-psutil`, `python3-evdev`,
-`python3-pyside6`), por eso el venv se crea con `--system-site-packages` y
-solo instala `pyserial` aparte.
+Python + PySide6. Usa `psutil` (stats), `pyserial` (comunicación con la
+placa) y, para inyectar teclas, `evdev`/`uinput` en Linux o la API Win32 en
+Windows (`macropad/injector.py` elige el backend correcto según
+`sys.platform`; ver `macropad/injector_linux.py` / `injector_windows.py`).
+
+### Linux
+
+En Fedora, `psutil`/`evdev`/`PySide6` ya vienen como paquetes de sistema
+(`python3-psutil`, `python3-evdev`, `python3-pyside6`), por eso el venv se
+crea con `--system-site-packages` y solo instala `pyserial` aparte.
 
 ```bash
 cd desktop-app
@@ -61,6 +66,37 @@ python3 -m venv --system-site-packages .venv   # si no existe todavía
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python main.py
 ```
+
+### Windows
+
+1. Instalar el driver **CH9102/CH343** del fabricante (WCH) — es el puente
+   USB-serie de la placa; sin él, Windows no la muestra como puerto COM.
+2. Instalar Python 3.11+ desde python.org (tildar "Add python.exe to PATH").
+3. Crear el venv e instalar dependencias (acá no hay paquetes de sistema
+   que reusar, por eso el `requirements-windows.txt` separado trae todo):
+
+   ```powershell
+   cd desktop-app
+   python -m venv .venv
+   .venv\Scripts\activate
+   pip install -r requirements-windows.txt
+   python main.py
+   ```
+
+Limitaciones conocidas en Windows (se degradan solas, no rompen la app):
+
+- **Temperatura de CPU**: `psutil` no expone sensores de hardware en
+  Windows, así que `cpu_temp` siempre se reporta como `0`. GPU% y
+  temperatura de GPU sí funcionan igual que en Linux, vía `nvidia-smi.exe`
+  (viene con el driver de NVIDIA).
+- **Brillo** (encoders mapeados a `brightnessup`/`brightnessdown`): se
+  controla vía WMI (`WmiMonitorBrightnessMethods`), que solo existe en
+  paneles que lo soportan (típicamente notebooks). En un monitor de
+  escritorio normal, esa acción no hace nada.
+- **Autostart**: no hay equivalente a un servicio de usuario systemd; para
+  arrancar la app al iniciar sesión, poner un acceso directo a
+  `desktop-app\.venv\Scripts\python.exe main.py` en la carpeta de Inicio de
+  Windows (`shell:startup`), o crear una tarea en el Programador de tareas.
 
 La ventana tiene dos pestañas:
 

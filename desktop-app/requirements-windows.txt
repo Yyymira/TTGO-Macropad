@@ -1,0 +1,11 @@
+# En Windows no hay paquetes de sistema que reusar (a diferencia de Fedora),
+# así que acá va todo lo que necesita la app de escritorio.
+pyserial
+psutil
+PySide6
+
+# Opcional: solo lo usan los encoders mapeados a brillo (brightnessup/
+# brightnessdown), vía WMI. Si no está instalado o el panel no lo soporta,
+# esas dos acciones simplemente no hacen nada — el resto de la app funciona
+# igual sin esto.
+wmi
