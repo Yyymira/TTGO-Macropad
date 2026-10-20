@@ -6,7 +6,7 @@
 static TFT_eSPI tft = TFT_eSPI();
 static DisplayMode currentMode = DisplayMode::Idle;
 
-static int statCpu = -1, statRam = -1, statCpuTemp = -1, statGpu = -1, statGpuTemp = -1;
+static int statCpu = -1, statRam = -1, statCpuTemp = -1, statGpu = -1, statGpuTemp = -1, statVram = -1;
 static uint8_t layerIndex = 0;
 static String layerName = "";
 static String layerLabels[NUM_BUTTONS];
@@ -66,12 +66,16 @@ static void renderIdle() {
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(2);
-    tft.drawString("RAM", 4, 98);
-    drawBar(38, 96, 108, 14, statRam, TFT_CYAN);
-    tft.drawString(String(statRam) + "%", 150, 98);
+    tft.drawString("RAM", 4, 94);
+    drawBar(44, 94, 100, 14, statRam, TFT_CYAN);
+    tft.drawString(String(statRam) + "%", 148, 94);
 
-    tft.drawString("CPU " + String(statCpuTemp) + "C", 182, 96);
-    tft.drawString("GPU " + String(statGpuTemp) + "C", 182, 114);
+    tft.drawString("VRAM", 4, 114);
+    drawBar(44, 114, 100, 14, statVram, TFT_MAGENTA);
+    tft.drawString(statVram < 0 ? String("--") : String(statVram) + "%", 148, 114);
+
+    tft.drawString("CPU " + String(statCpuTemp) + "C", 184, 94);
+    tft.drawString("GPU " + String(statGpuTemp) + "C", 184, 114);
 }
 
 static void renderLayer() {
@@ -128,7 +132,8 @@ void displaySetMode(DisplayMode mode) {
     render();
 }
 
-void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp) {
+void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp, int vram) {
+    statVram = vram;
     statCpu = cpu;
     statRam = ram;
     statCpuTemp = cpuTemp;

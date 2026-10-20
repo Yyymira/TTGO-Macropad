@@ -55,7 +55,7 @@ static void handleLine(const String &line) {
         }
     } else if (strcmp(type, "stats") == 0) {
         displaySetStats(doc["cpu"] | -1, doc["ram"] | -1, doc["cpu_temp"] | -1,
-                         doc["gpu"] | -1, doc["gpu_temp"] | -1);
+                         doc["gpu"] | -1, doc["gpu_temp"] | -1, doc["vram"] | -1);
     } else if (strcmp(type, "layer") == 0) {
         String labels[NUM_BUTTONS];
         JsonArray arr = doc["labels"];

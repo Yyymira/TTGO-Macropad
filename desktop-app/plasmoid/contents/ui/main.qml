@@ -208,7 +208,7 @@ PlasmoidItem {
                 text: {
                     const s = root.status.stats || {}
                     return "CPU " + s.cpu + "% · " + s.cpu_temp + "°C    GPU " + s.gpu + "% · " + s.gpu_temp
-                         + "°C    RAM " + s.ram + "%"
+                         + "°C    RAM " + s.ram + "%" + (s.vram >= 0 ? "    VRAM " + s.vram + "%" : "")
                 }
             }
             PC3.Label {
