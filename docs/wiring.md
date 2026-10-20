@@ -5,11 +5,13 @@ nativo (puente serie CH9102), display ST7789 1.14" 240x135.
 
 ## Lista de compras
 
-- 4x pulsador táctil momentáneo (4 pines, tipo 6x6mm) — los botones 0 y 1 ya están
-  integrados en la placa, no hace falta comprarlos.
+- 6x switch Cherry MX (Brown), montaje en placa — van encastrados en la tapa del
+  [gabinete](../gabinete/README.md), con los cables soldados directo a los pines.
 - 2x encoder rotativo EC11 (solo se usan las 2 señales de cuadratura CLK/DT; el
   push-button del eje, si el modelo lo trae, queda sin cablear por ahora).
-- Cable dupont hembra-hembra o protoboard, según cómo lo vayas a montar.
+- Cable fino para soldar (tipo wire-wrap o de cinta plana).
+- Los 2 botones integrados de la placa se usan como botones 7 y 8 (vía los
+  pulsadores impresos del gabinete), no hace falta comprar nada para eso.
 
 ## Pines usados por la placa (no tocar)
 
@@ -26,57 +28,61 @@ nativo (puente serie CH9102), display ST7789 1.14" 240x135.
 
 ## Pinout para el macropad
 
+La numeración de botones es la de la app (Tecla 1-6, Placa) y la pantalla de
+capa. En el gabinete, la fila de atrás es 1-2-3 y la de adelante 4-5-6, de
+izquierda a derecha.
+
 | Función | GPIO | Notas |
 |---|---|---|
-| Botón 0 | 0 | Integrado en la placa. Ojo: si lo mantenés apretado al conectar el USB o resetear, la placa entra en modo de flasheo en vez de arrancar normal. En uso normal (ya booteada) funciona como botón cualquiera. |
-| Botón 1 | 35 | Integrado en la placa. |
-| Botón 2 | 32 | A cablear: pulsador entre GPIO32 y GND. |
-| Botón 3 | 33 | A cablear: pulsador entre GPIO33 y GND. |
-| Botón 4 | 25 | A cablear: pulsador entre GPIO25 y GND. |
-| Botón 5 | 26 | A cablear: pulsador entre GPIO26 y GND. |
-| Encoder 0 — CLK | 27 | |
-| Encoder 0 — DT | 14 | |
-| Encoder 1 — CLK | 21 | |
-| Encoder 1 — DT | 22 | |
+| Tecla 1 (atrás, izq.) | 32 | Cherry MX entre GPIO32 y GND. |
+| Tecla 2 (atrás, centro) | 33 | Cherry MX entre GPIO33 y GND. |
+| Tecla 3 (atrás, der.) | 25 | Cherry MX entre GPIO25 y GND. |
+| Tecla 4 (adelante, izq.) | 26 | Cherry MX entre GPIO26 y GND. |
+| Tecla 5 (adelante, centro) | 13 | Cherry MX entre GPIO13 y GND. |
+| Tecla 6 (adelante, der.) | 17 | Cherry MX entre GPIO17 y GND. |
+| Placa (GPIO0) | 0 | Integrado. Ojo: si lo mantenés apretado al conectar el USB o resetear, la placa entra en modo de flasheo en vez de arrancar normal. En uso normal funciona como botón cualquiera. |
+| Placa (GPIO35) | 35 | Integrado. |
+| Encoder 1 (atrás) — CLK | 27 | |
+| Encoder 1 (atrás) — DT | 14 | |
+| Encoder 2 (adelante) — CLK | 21 | |
+| Encoder 2 (adelante) — DT | 22 | |
 
-Todos los pulsadores van a **GND**, usando el pull-up interno del ESP32
+Todos los switches van a **GND**, usando el pull-up interno del ESP32
 (`INPUT_PULLUP`, ya configurado en el firmware) — no hace falta resistencia
-externa. Los encoders usan la misma lógica de pull-up interno vía la librería
+externa ni diodos (cada tecla tiene su propio GPIO, no hay matriz). Los
+encoders usan la misma lógica de pull-up interno vía la librería
 `ESP32Encoder`.
 
-Libres para el futuro (push-button de los encoders, una 7ma tecla, etc.):
-GPIO13, GPIO15 (ver nota abajo), y GPIO36-39 (sin pull-up interno — si los
-usás, agregá una resistencia externa de ~10k a 3V3).
+Libres para el futuro (push-button de los encoders, etc.): GPIO15 (ver nota
+abajo), GPIO2/GPIO12 (también de "strapping", mejor evitarlos) y GPIO36-39
+(sin pull-up interno — si los usás, agregá una resistencia externa de ~10k a 3V3).
 
 **Nota sobre GPIO15**: es un pin de "strapping" (MTDO). Usarlo como entrada
 normal después del arranque no rompe nada; el único efecto es que el log de
-boot por USB sale distinto. Lo marco por transparencia, no es un problema real
-para este uso.
+boot por USB sale distinto.
 
 ## Diagrama de conexión
 
 ```
-                         TTGO T-Display (vista desde arriba)
-                    ┌───────────────────────────────────┐
-                    │  [pantalla 240x135]                │
-       Botón 0 ─────┤ (GPIO0, integrado)                 │
-       Botón 1 ─────┤ (GPIO35, integrado)                 │
-                    │                                     │
-   GPIO32 ──●───────┤                               ├───── USB (a la PC)
-             │       │                                     │
-          Botón 2    └───────────────────────────────────┘
-             │
-            GND
+   Vista superior del gabinete
 
-   GPIO33 ──●── Botón 3 ──GND
-   GPIO25 ──●── Botón 4 ──GND
-   GPIO26 ──●── Botón 5 ──GND
+   (Enc 1)                 ┌──────────── TTGO ────────────┐ [7]
+                           │       [pantalla 240x135]      ├─ USB
+   (Enc 2)                 └──────────────────────────────┘ [8]
 
-   Encoder 0:  CLK → GPIO27     Encoder 1:  CLK → GPIO21
+        [1]  [2]  [3]          [7] = GPIO0, [8] = GPIO35 (integrados,
+        [4]  [5]  [6]                 vía pulsadores impresos)
+
+   Tecla 1 ── GPIO32        Tecla 4 ── GPIO26
+   Tecla 2 ── GPIO33        Tecla 5 ── GPIO13
+   Tecla 3 ── GPIO25        Tecla 6 ── GPIO17
+   (la otra pata de cada switch, a GND)
+
+   Encoder 1:  CLK → GPIO27     Encoder 2:  CLK → GPIO21
                DT  → GPIO14                 DT  → GPIO22
-               GND → GND (placa)            GND → GND (placa)
+               C   → GND                    C   → GND
 ```
 
-Cada pulsador: una pata a GND (cualquier pin GND de la placa), la otra al GPIO
-correspondiente. Cada encoder EC11: el pin común (GND) a cualquier GND de la
-placa, CLK y DT a los GPIOs indicados arriba.
+Tip: hacé una "barra" de GND encadenando con un solo cable la pata de GND de
+los 6 switches y el pin común de los 2 encoders, y llevá esa barra a un solo
+pin GND de la placa.

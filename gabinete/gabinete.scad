@@ -1,6 +1,6 @@
 // =====================================================================
 //  TTGO Macropad — gabinete imprimible en 3D
-//  4 Cherry MX (montaje en placa, pines al aire para soldar cables),
+//  6 Cherry MX en grilla 3x2 (montaje en placa, pines al aire para soldar cables),
 //  2 encoders EC11 a la izquierda de la TTGO T-Display, 2 pulsadores
 //  que accionan los botones integrados de la placa, y pata trasera con
 //  bisagra dentada (ángulo/altura regulable cada 15°).
@@ -47,7 +47,7 @@ wall = 2.4;
 floor_t = 2.4;
 lid_t = 3.0;
 inner_w = 90;
-inner_d = 70;
+inner_d = 89;
 inner_h = 15;       // espacio libre interno (switches + cables)
 r_out = 4;
 tol = 0.25;
@@ -57,8 +57,8 @@ pad_h = 4;          // refuerzos del piso para tornillos de la tapa
 pad_h_b = 6;        // refuerzos del piso para la bisagra
 
 // ---------- Layout (vista superior, Y+ = fondo) ----------
-sw_y = -24;
-top_y = 14;
+sw_y = -14.5;       // fila de atrás de switches (la de adelante va un pitch más cerca)
+top_y = 23.5;
 enc_x = -28;
 enc_dy = 11;
 ttgo_x = inner_w/2 - usb_gap - pcb_l/2;
@@ -69,13 +69,14 @@ z_pcb_top = H_b - stack_top;
 z_pcb_bot = z_pcb_top - pcb_t;
 frame_h = stack_top + pcb_t + 1.4;
 
-sw_pos  = [for (i = [0:3]) [(i - 1.5) * mx_pitch, sw_y]];
+// orden = número de botón en el firmware: atrás 0-1-2, adelante 3-4-5
+sw_pos  = [for (r = [0:1], c = [0:2]) [(c - 1) * mx_pitch, sw_y - r * mx_pitch]];
 enc_pos = [[enc_x, top_y - enc_dy], [enc_x, top_y + enc_dy]];
 btn_pos = [[ttgo_x + btn_dx, top_y - btn_dy], [ttgo_x + btn_dx, top_y + btn_dy]];
 lid_screws = [for (sx = [-1, 1], sy = [-1, 1]) [sx * (inner_w/2 - 3.6), sy * (inner_d/2 - 3.6)]];
 
 // ---------- Bisagra / pata ----------
-y_h = 30;           // eje de la bisagra
+y_h = 39.5;         // eje de la bisagra
 br_t = 3;           // espesor de la placa de la bisagra
 k_r = 5;            // radio de nudillos
 z_ax = -br_t - k_r - 0.5;
@@ -287,7 +288,8 @@ module prueba_ttgo() {
 module prueba_mx_enc() {
     intersection() {
         tapa();
-        translate([enc_x - 11, sw_y - 10, 0]) cube([22, 34, 50]);
+        translate([enc_x - 10, sw_pos[0].y - 10, 0])
+            cube([sw_pos[0].x + 10 - (enc_x - 10), enc_pos[0].y + 9 - (sw_pos[0].y - 10), 50]);
     }
 }
 

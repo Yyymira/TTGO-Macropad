@@ -7,7 +7,7 @@ from pathlib import Path
 
 CONFIG_PATH = Path.home() / ".config" / "ttgo-macropad" / "config.json"
 
-NUM_BUTTONS = 6
+NUM_BUTTONS = 8  # 0-5: Cherry MX (grilla 3x2), 6-7: botones integrados de la placa
 NUM_ENCODERS = 2
 
 DEFAULT_CONFIG = {
@@ -16,12 +16,14 @@ DEFAULT_CONFIG = {
         {
             "name": "General",
             "buttons": [
+                {"action": "key", "keys": ["previoussong"]},
                 {"action": "key", "keys": ["playpause"]},
                 {"action": "key", "keys": ["nextsong"]},
-                {"action": "key", "keys": ["previoussong"]},
                 {"action": "key", "keys": ["mute"]},
-                {"action": "layer_next"},
                 {"action": "none"},
+                {"action": "none"},
+                {"action": "layer_prev"},
+                {"action": "layer_next"},
             ],
             "encoders": [
                 {"cw": ["volumeup"], "ccw": ["volumedown"]},
@@ -35,8 +37,10 @@ DEFAULT_CONFIG = {
                 {"action": "key", "keys": ["ctrl", "w"]},
                 {"action": "key", "keys": ["ctrl", "shift", "t"]},
                 {"action": "key", "keys": ["ctrl", "tab"]},
+                {"action": "key", "keys": ["ctrl", "shift", "tab"]},
+                {"action": "key", "keys": ["f5"]},
+                {"action": "layer_prev"},
                 {"action": "layer_next"},
-                {"action": "none"},
             ],
             "encoders": [
                 {"cw": ["volumeup"], "ccw": ["volumedown"]},

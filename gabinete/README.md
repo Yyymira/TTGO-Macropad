@@ -3,20 +3,22 @@
 ![Ensamble](img/ensamble.png)
 
 Diseño paramétrico en OpenSCAD (`gabinete.scad`). Medida exterior:
-**94.8 × 74.8 × 20.4 mm** (sin la pata ni las perillas/keycaps).
+**94.8 × 93.8 × 20.4 mm** (sin la pata ni las perillas/keycaps).
 
-- 4 Cherry MX adelante, montados a presión en la tapa (agujero estándar
-  14 × 14 mm con 1.5 mm de "placa"). Los pines quedan al aire por abajo
-  para soldar los cables directamente, sin PCB.
+- 6 Cherry MX adelante en grilla 3 × 2, montados a presión en la tapa
+  (agujero estándar 14 × 14 mm con 1.5 mm de "placa"). Los pines quedan al
+  aire por abajo para soldar los cables directamente, sin PCB. Numeración
+  (igual que en la app y la pantalla): fila de atrás 1-2-3, de adelante 4-5-6.
 - 2 EC11 atrás a la izquierda; la tapa tiene 1.6 mm ahí para que entren
   arandela + tuerca en el buje M7.
 - La TTGO entra a presión desde abajo en un marco con trabas, con el
   display contra la ventana. El USB-C sale por el costado derecho.
 - 2 pulsadores sueltos que pasan por la tapa y apretan los botones
-  integrados de la placa (GPIO0 y GPIO35).
+  integrados de la placa (GPIO0 y GPIO35): son los botones 7 y 8, también
+  asignables desde la app (por defecto, capa anterior/siguiente).
 - Pata trasera con bisagra dentada: se afloja el tornillo, se elige el
-  ángulo (un "click" cada 15°) y se aprieta. Plegada da ~6° de
-  inclinación; vertical, ~37°.
+  ángulo (un "click" cada 15°) y se aprieta. Plegada da ~4° de
+  inclinación; vertical, ~29°.
 
 ## Antes de imprimir todo: medir y probar
 
@@ -66,7 +68,7 @@ PLA o PETG, capa 0.2 mm, 3 perímetros, 20 % de relleno.
    queda dentro del rebaje).
 2. Encastrar la TTGO en el marco desde abajo, display hacia la ventana y
    USB-C hacia el costado derecho, hasta que las trabas hagan click.
-3. Montar los 4 Cherry MX desde arriba y los 2 EC11 desde abajo
+3. Montar los 6 Cherry MX desde arriba y los 2 EC11 desde abajo
    (arandela + tuerca por arriba). Si tus EC11 tienen la pestañita
    antirrotación, doblala o cortala: la tapa no tiene ranura para ella.
 4. Soldar los cables según [`docs/wiring.md`](../docs/wiring.md).

@@ -1,14 +1,15 @@
 # TTGO Macropad
 
-Mini teclado de macros con 6 botones + 2 encoders rotativos sobre una placa
-**TTGO T-Display** (ESP32 + pantalla ST7789 1.14"), programable desde una app
+Mini teclado de macros con 6 teclas Cherry MX + 2 encoders rotativos sobre una placa
+**TTGO T-Display** (ESP32 + pantalla ST7789 1.14") — más los 2 botones
+integrados de la placa, 8 botones asignables en total —, programable desde una app
 de escritorio en Python (Linux/Wayland/KDE).
 
 - En reposo, la pantalla muestra gauges tipo velocímetro para CPU% y GPU%
   (GPU vía `nvidia-smi`), una barra para RAM% y números para las
   temperaturas de CPU y GPU — todo se actualiza solo, sin tocar nada.
-- Al tocar un botón o encoder, pasa a mostrar la capa activa (grilla con las
-  6 acciones). Tras unos segundos de inactividad (configurable), vuelve sola
+- Al tocar un botón o encoder, pasa a mostrar la capa activa (grilla 3×2 con las
+  6 teclas, más una columna con los 2 botones integrados). Tras unos segundos de inactividad (configurable), vuelve sola
   a la pantalla de stats.
 - Un botón de cada capa puede estar mapeado a "capa siguiente/anterior/ir a
   capa N", permitiendo tener varios set de atajos.
@@ -18,8 +19,8 @@ de escritorio en Python (Linux/Wayland/KDE).
 
 Ver [docs/schematic.html](docs/schematic.html) (esquemático visual) o
 [docs/wiring.md](docs/wiring.md) para el pinout y la lista de compras —
-**todavía falta cablear 4 botones + 2 encoders** (los 2 botones integrados de
-la placa ya funcionan).
+**todavía falta cablear las 6 teclas Cherry MX + 2 encoders** (los 2 botones
+integrados de la placa ya funcionan).
 
 El gabinete imprimible en 3D (OpenSCAD paramétrico + STL listos) está en
 [gabinete/](gabinete/README.md).
@@ -106,7 +107,7 @@ La ventana tiene dos pestañas:
 - **Estado**: conexión con la placa, modo actual (idle/capa) y un log de
   eventos crudos (útil para debug).
 - **Configuración**: editor de capas — por cada capa se define la acción de
-  los 6 botones y de los 2 encoders, y el timeout de inactividad. "Guardar y
+  los 8 botones (6 teclas + 2 integrados) y de los 2 encoders, y el timeout de inactividad. "Guardar y
   aplicar" persiste en `~/.config/ttgo-macropad/config.json` y lo usa al
   toque, sin reiniciar la app ni la placa.
 
@@ -141,7 +142,7 @@ poner cualquier cosa (zoom, scroll, lo que sea).
 - [x] Probado de punta a punta con los 2 botones integrados de la placa
       (play/pause real sobre un video de YouTube, cambio de capa, vuelta
       automática a stats).
-- [ ] Cablear los 4 botones y 2 encoders restantes (ver
+- [ ] Cablear las 6 teclas Cherry MX y los 2 encoders (ver
       [docs/wiring.md](docs/wiring.md)) y probar esa parte.
 - [ ] Opcional: autostart de la app al iniciar sesión (sería un servicio de
       usuario systemd apuntando a `desktop-app/.venv/bin/python main.py`).

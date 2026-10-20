@@ -80,17 +80,28 @@ static void renderLayer() {
     tft.setTextFont(2);
     tft.drawString("Capa " + String(layerIndex) + ": " + layerName, 8, 4);
 
-    const int cols = 3, rows = 2;
-    const int cellW = 240 / cols, cellH = (135 - 24) / rows;
+    // Grilla 3x2 para los Cherry MX (misma disposición que en el gabinete) y
+    // una columna angosta a la derecha para los 2 botones integrados, que en
+    // el gabinete quedan a la derecha del display.
     const int top = 24;
+    const int sideW = 54;
+    const int cols = 3, rows = 2;
+    const int cellW = (240 - sideW) / cols, cellH = (135 - top) / rows;
 
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-        int col = i % cols, row = i / cols;
-        int x = col * cellW, y = top + row * cellH;
+    for (uint8_t i = 0; i < 6; i++) {
+        int x = (i % cols) * cellW, y = top + (i / cols) * cellH;
         tft.drawRect(x, y, cellW, cellH, TFT_DARKGREY);
-        tft.setTextDatum(MC_DATUM);
         tft.drawString(layerLabels[i], x + cellW / 2, y + cellH / 2);
+    }
+
+    tft.setTextColor(TFT_SILVER, TFT_BLACK);
+    for (uint8_t i = 6; i < NUM_BUTTONS; i++) {
+        int x = cols * cellW, y = top + (i - 6) * cellH;
+        tft.drawRect(x, y, 240 - x, cellH, TFT_DARKGREY);
+        tft.drawString(layerLabels[i], x + (240 - x) / 2, y + cellH / 2);
     }
     tft.setTextDatum(TL_DATUM);
 }
@@ -125,7 +136,7 @@ void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp) {
     if (currentMode == DisplayMode::Idle) render();
 }
 
-void displaySetLayer(uint8_t index, const String &name, const String labels[6]) {
+void displaySetLayer(uint8_t index, const String &name, const String labels[NUM_BUTTONS]) {
     layerIndex = index;
     layerName = name;
     for (uint8_t i = 0; i < NUM_BUTTONS; i++) layerLabels[i] = labels[i];

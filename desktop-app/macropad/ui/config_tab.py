@@ -131,14 +131,16 @@ class ConfigTab(QWidget):
         left.addWidget(self.layer_list)
         left.addLayout(layer_buttons)
 
-        self.button_rows = [ButtonRow(f"Botón {i}") for i in range(NUM_BUTTONS)]
+        names = [f"Tecla {i + 1}" for i in range(6)] + ["Placa (GPIO0)", "Placa (GPIO35)"]
+        self.button_rows = [ButtonRow(name) for name in names[:NUM_BUTTONS]]
         buttons_box = QGroupBox("Botones de la capa seleccionada")
         buttons_layout = QVBoxLayout()
         for row in self.button_rows:
             buttons_layout.addWidget(row)
         buttons_box.setLayout(buttons_layout)
 
-        self.encoder_rows = [EncoderRow(f"Encoder {i}") for i in range(NUM_ENCODERS)]
+        enc_names = ["Encoder 1 (atrás)", "Encoder 2 (adelante)"]
+        self.encoder_rows = [EncoderRow(name) for name in enc_names[:NUM_ENCODERS]]
         encoders_box = QGroupBox("Encoders de la capa seleccionada")
         encoders_layout = QVBoxLayout()
         for row in self.encoder_rows:
