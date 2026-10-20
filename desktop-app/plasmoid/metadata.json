@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Id": "com.github.yyymira.ttgomacropad",
+        "Name": "TTGO Macropad",
+        "Description": "Estado, capas y asignación de teclas del macropad TTGO",
+        "Icon": "input-keyboard",
+        "Category": "System Information",
+        "Authors": [{ "Name": "Yyymira" }],
+        "Version": "1.0",
+        "Website": "https://github.com/Yyymira/TTGO-Macropad"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "Hardware"
+}

@@ -68,8 +68,28 @@ crea con `--system-site-packages` y solo instala `pyserial` aparte.
 cd desktop-app
 python3 -m venv --system-site-packages .venv   # si no existe todavía
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python main.py
+linux/install.sh
 ```
+
+`install.sh` deja todo integrado a KDE Plasma 6, sin ventanas:
+
+- **Servicio de fondo** (`daemon.py`, servicio systemd de usuario
+  `ttgo-macropad`): arranca solo al iniciar sesión y maneja la placa. Expone
+  una API local en `127.0.0.1:47823` protegida con un token que solo tu
+  usuario puede leer (`$XDG_RUNTIME_DIR/ttgo-macropad/token`).
+- **Widget de Plasma** (`plasmoid/`): ícono en el panel o en la bandeja que
+  despliega el estado, las stats, las capas y el editor de botones/encoders.
+  Para mostrarlo: clic derecho en el panel → *Agregar o administrar
+  widgets* → "TTGO Macropad", o *Configurar bandeja del sistema → Entradas →
+  TTGO Macropad → Mostrar siempre*.
+
+Comandos útiles: `systemctl --user status|restart|stop ttgo-macropad`,
+`journalctl --user -u ttgo-macropad`. Volver a correr `install.sh` actualiza
+el servicio y el widget.
+
+`main.py` (la ventana con pestañas, la misma que se usa en Windows) sigue
+funcionando, pero no hay que correrla junto con el servicio: los dos
+pelearían por el puerto serie.
 
 ### Windows
 
@@ -144,5 +164,4 @@ poner cualquier cosa (zoom, scroll, lo que sea).
       automática a stats).
 - [ ] Cablear las 6 teclas Cherry MX y los 2 encoders (ver
       [docs/wiring.md](docs/wiring.md)) y probar esa parte.
-- [ ] Opcional: autostart de la app al iniciar sesión (sería un servicio de
-      usuario systemd apuntando a `desktop-app/.venv/bin/python main.py`).
+- [x] Linux: servicio de fondo con arranque automático + widget de Plasma.

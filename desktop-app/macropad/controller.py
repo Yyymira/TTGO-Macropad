@@ -38,6 +38,7 @@ class Controller(QObject):
 
         self.layer_index = 0
         self.mode = "idle"
+        self.last_stats: dict = {}
         self._activity_ticks_left = 0  # en unidades de STATS_PUSH_INTERVAL_MS
 
         self.timer = QTimer(self)
@@ -61,6 +62,11 @@ class Controller(QObject):
         self.layer_index = min(self.layer_index, len(self.config["layers"]) - 1)
         if self.mode == "layer":
             self._send_layer_snapshot()
+
+    def select_layer(self, index: int) -> None:
+        self.layer_index = max(0, min(index, len(self.config["layers"]) - 1))
+        self._mark_activity()
+        self._send_layer_snapshot()
 
     def _on_device_event(self, evt: dict) -> None:
         etype = evt.get("type")
@@ -130,7 +136,8 @@ class Controller(QObject):
 
     def _tick(self) -> None:
         if self.mode == "idle":
-            self.link.send({"type": "stats", **self.stats.read()})
+            self.last_stats = self.stats.read()
+            self.link.send({"type": "stats", **self.last_stats})
             return
         # modo "layer": contamos hacia el timeout de inactividad
         self._activity_ticks_left -= 1

@@ -57,8 +57,9 @@ class SerialLink(QObject):
         if self._port:
             return self._port
         # list_ports enumera /dev/ttyACM*, /dev/ttyUSB* en Linux y COM* en
-        # Windows por igual, así que esto sirve para los dos sistemas.
-        candidates = sorted(p.device for p in list_ports.comports())
+        # Windows por igual. Se filtra por VID USB para descartar los puertos
+        # serie legacy de la placa madre (/dev/ttyS*, COM1), que siempre existen.
+        candidates = sorted(p.device for p in list_ports.comports() if p.vid is not None)
         return candidates[0] if candidates else None
 
     def _run(self) -> None:
