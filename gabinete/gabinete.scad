@@ -30,11 +30,14 @@ disp_dx = -3.0;     // centro del área visible respecto del centro del PCB
 disp_dy = 0;
 usb_z = 1.6;        // centro del USB-C por encima de la cara superior del PCB
 usb_gap = 0.5;      // extremo del PCB (lado USB) -> cara interna de la pared
+frame_extra_w = 1.0;   // holgura extra en el ancho del marco (medido en la prueba impresa)
+side_btn_gap = 4;      // apertura en las paredes largas para el botón lateral (sección A)
+side_btn_from_end = 11; // de esa apertura al extremo USB de la placa (sección B)
 
 // ---------- Cherry MX ----------
-mx_cut = 14.0;      // agujero cuadrado estándar (subir a 14.1-14.2 si entra muy duro)
+mx_cut = 15.0;      // agujero cuadrado (medido en la prueba impresa; el estándar es 14)
 mx_plate = 1.5;     // espesor donde enganchan las trabas del switch
-mx_pocket = 16;     // vaciado inferior para que las trabas puedan flexar
+mx_pocket = 17;     // vaciado inferior para que las trabas puedan flexar
 mx_pitch = 19.05;
 
 // ---------- EC11 ----------
@@ -138,14 +141,20 @@ module snap_lip(len) {
 module ttgo_frame() {
     x0 = ttgo_x - pcb_l/2 - 0.3 - 1.2;
     x1 = ttgo_x + pcb_l/2;
-    yi = pcb_w/2 + 0.3;
-    translate([0, 0, H_b - frame_h]) {
-        // paredes largas
-        for (s = [-1, 1]) translate([x0, top_y + s * (yi + 0.6) - 0.6, 0]) cube([x1 - x0, 1.2, frame_h + e]);
-        // pared del lado opuesto al USB
-        translate([x0, top_y - yi - 1.2, 0]) cube([1.2, 2 * yi + 2.4, frame_h + e]);
+    yi = pcb_w/2 + 0.3 + frame_extra_w/2;
+    translate([0, 0, H_b - frame_h]) difference() {
+        union() {
+            // paredes largas
+            for (s = [-1, 1]) translate([x0, top_y + s * (yi + 0.6) - 0.6, 0]) cube([x1 - x0, 1.2, frame_h + e]);
+            // pared del lado opuesto al USB
+            translate([x0, top_y - yi - 1.2, 0]) cube([1.2, 2 * yi + 2.4, frame_h + e]);
+        }
+        // apertura para el botón lateral, en ambas paredes largas
+        translate([x1 - side_btn_from_end - side_btn_gap, top_y - yi - 2, -1])
+            cube([side_btn_gap, 2 * yi + 4, frame_h + 2]);
     }
-    for (s = [-1, 1], dx = [-12, 12])
+    // las trabas quedan lejos de la apertura del botón lateral
+    for (s = [-1, 1], dx = [-12, 2])
         translate([ttgo_x + dx, top_y + s * yi, z_pcb_bot])
             mirror([0, s < 0 ? 1 : 0, 0]) snap_lip(8);
 }

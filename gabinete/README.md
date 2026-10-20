@@ -6,13 +6,16 @@ Diseño paramétrico en OpenSCAD (`gabinete.scad`). Medida exterior:
 **94.8 × 93.8 × 20.4 mm** (sin la pata ni las perillas/keycaps).
 
 - 6 Cherry MX adelante en grilla 3 × 2, montados a presión en la tapa
-  (agujero estándar 14 × 14 mm con 1.5 mm de "placa"). Los pines quedan al
+  (agujero de 15 × 15 mm, ajustado con la prueba impresa, con 1.5 mm de
+  "placa"). Los pines quedan al
   aire por abajo para soldar los cables directamente, sin PCB. Numeración
   (igual que en la app y la pantalla): fila de atrás 1-2-3, de adelante 4-5-6.
 - 2 EC11 atrás a la izquierda; la tapa tiene 1.6 mm ahí para que entren
   arandela + tuerca en el buje M7.
 - La TTGO entra a presión desde abajo en un marco con trabas, con el
-  display contra la ventana. El USB-C sale por el costado derecho.
+  display contra la ventana. El USB-C sale por el costado derecho. Las
+  paredes largas del marco tienen una apertura de 4 mm a 11 mm del extremo
+  USB para el botón lateral de la placa.
 - 2 pulsadores sueltos que pasan por la tapa y apretan los botones
   integrados de la placa (GPIO0 y GPIO35): son los botones 7 y 8, también
   asignables desde la app (por defecto, capa anterior/siguiente).
@@ -39,7 +42,12 @@ Después imprimí las dos piezas de prueba (~15 min cada una):
   ventana y los pulsadores. Confirma que la placa traba, que el display
   queda centrado y que los pulsadores aprietan los botones.
 - `prueba_mx_enc.stl`: un switch y un encoder. Confirma que el Cherry
-  traba firme (si entra muy duro subí `mx_cut` a 14.1–14.2).
+  traba firme: si entra muy duro subí `mx_cut`; si queda flojo, bajalo de
+  a 0.2 mm (el estándar de placa es 14.0).
+
+Ajustes ya hechos tras la primera prueba impresa: `mx_cut` = 15.0,
+`frame_extra_w` = 1.0 (marco 1 mm más ancho) y la apertura del botón lateral
+(`side_btn_gap`, `side_btn_from_end`).
 
 ## Piezas (`stl/`, ya orientadas para imprimir)
 
