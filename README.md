@@ -21,6 +21,9 @@ Ver [docs/schematic.html](docs/schematic.html) (esquemático visual) o
 **todavía falta cablear 4 botones + 2 encoders** (los 2 botones integrados de
 la placa ya funcionan).
 
+El gabinete imprimible en 3D (OpenSCAD paramétrico + STL listos) está en
+[gabinete/](gabinete/README.md).
+
 ## Arquitectura
 
 La placa ESP32 de este modelo no tiene USB nativo (confirmado con
