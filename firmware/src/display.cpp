@@ -25,16 +25,17 @@ static uint16_t gaugeColor(int pct) {
     return TFT_RED;
 }
 
-// Gauge tipo velocímetro: arco de 270° que abre hacia abajo (de 225° a 135°,
-// en sentido horario pasando por arriba), con el % y una etiqueta al centro.
+// Gauge tipo velocímetro: arco de 270° abierto hacia abajo que se llena de
+// izquierda a derecha. En TFT_eSPI los ángulos de drawArc se miden en sentido
+// horario desde las 6 en punto, así que 45° es abajo a la izquierda y 315°
+// abajo a la derecha.
 static void drawGauge(int cx, int cy, int r, int ir, int pct, const char *label) {
     pct = constrain(pct, 0, 100);
-    const uint32_t trackStart = 225, trackEnd = 135;
+    const uint32_t trackStart = 45, trackEnd = 315;
     tft.drawArc(cx, cy, r, ir, trackStart, trackEnd, TFT_DARKGREY, TFT_BLACK, true);
 
     if (pct > 0) {
-        float rawEnd = trackStart + (pct / 100.0f) * 270.0f;
-        uint32_t valueEnd = (uint32_t)(rawEnd >= 360 ? rawEnd - 360 : rawEnd);
+        uint32_t valueEnd = trackStart + (uint32_t)(pct * 270 / 100);
         tft.drawArc(cx, cy, r, ir, trackStart, valueEnd, gaugeColor(pct), TFT_BLACK, true);
     }
 
