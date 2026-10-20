@@ -151,6 +151,32 @@ Cada encoder tiene una lista de teclas para "horario" y otra para
 `volumeup`/`volumedown` y `brightnessup`/`brightnessdown`, pero se puede
 poner cualquier cosa (zoom, scroll, lo que sea).
 
+## Reloj y clima, Bluetooth y OTA
+
+Se configuran desde la sección **Dispositivo** del widget (red WiFi de 2.4 GHz,
+contraseña y ciudad) y quedan guardados en la placa.
+
+- **Pantalla de reposo**: con la PC conectada se elige *Solo stats*, *Solo
+  reloj y clima* o *Ambos* (alterna cada 10 s). Si la PC deja de mandar datos
+  por 5 s (apagada, servicio detenido, o la placa a batería lejos de la PC),
+  queda siempre el reloj con el clima. El clima viene de
+  [Open-Meteo](https://open-meteo.com) (gratis, sin API key): temperatura,
+  humedad y pronóstico de hoy y los 2 días siguientes, actualizado cada 15 min.
+  La ciudad acepta "Ciudad" o "Ciudad, país" para desambiguar.
+- **Bluetooth**: sin la PC, la placa funciona como teclado Bluetooth
+  ("TTGO Macropad") con las mismas capas y teclas — el servicio le copia el
+  mapeo cada vez que se guarda. Se empareja una vez desde el celular. Las
+  teclas multimedia y de volumen funcionan; el brillo no existe en Bluetooth.
+  En la pantalla de capa, "BT" en celeste indica que hay un celular conectado.
+- **OTA (actualizar por WiFi)**: con la placa en el WiFi, `firmware/ota_upload.sh`
+  compila y sube el firmware sin cable. La contraseña OTA se genera sola y vive
+  en `~/.config/ttgo-macropad/config.json` (permisos 600, junto con la del WiFi).
+  El cable USB sigue funcionando igual como respaldo.
+
+Para ver el reloj con la PC apagada, la placa necesita energía: muchas PCs
+cortan el USB al apagarse, así que hace falta una batería LiPo (la TTGO trae
+conector y cargador) o un cargador de celular.
+
 ## Estado del proyecto
 
 - [x] Firmware base: lectura de botones/encoders, display con pantalla idle
@@ -165,3 +191,5 @@ poner cualquier cosa (zoom, scroll, lo que sea).
 - [ ] Cablear las 6 teclas Cherry MX y los 2 encoders (ver
       [docs/wiring.md](docs/wiring.md)) y probar esa parte.
 - [x] Linux: servicio de fondo con arranque automático + widget de Plasma.
+- [x] Firmware: WiFi, reloj/clima, teclado Bluetooth en modo autónomo y OTA.
+- [ ] Probar WiFi/clima/OTA con la red real y el Bluetooth con el celular.

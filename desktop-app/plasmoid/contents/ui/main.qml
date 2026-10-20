@@ -19,6 +19,8 @@ PlasmoidItem {
     readonly property var buttonNames: ["Tecla 1", "Tecla 2", "Tecla 3", "Tecla 4", "Tecla 5", "Tecla 6",
                                         "Placa (GPIO0)", "Placa (GPIO35)"]
     readonly property var encoderNames: ["Encoder 1 (atrás)", "Encoder 2 (adelante)"]
+    readonly property var idleViews: ["stats", "weather", "both"]
+    readonly property var idleViewNames: ["Solo stats", "Solo reloj y clima", "Ambos (alternando)"]
 
     property string token: ""
     property bool daemonUp: false
@@ -99,9 +101,11 @@ PlasmoidItem {
     }
 
     function saveConfig() {
-        api("POST", "/config", draft, () => {
+        api("POST", "/config", draft, (res) => {
+            if (res.device) draft.device = res.device  // trae la ubicación resuelta
             dirty = false
             message = "Guardado"
+            rev++
             poll()
         })
     }
@@ -148,6 +152,20 @@ PlasmoidItem {
         while (l.encoders.length <= i) l.encoders.push({cw: [], ccw: []})
         l.encoders[i][dir] = keys
         dirty = true
+    }
+    function deviceAt(_rev) { return (draft && draft.device) ? draft.device : {} }
+    function setDevice(field, value) {
+        if (!draft) return
+        if (!draft.device) draft.device = {}
+        draft.device[field] = value
+        dirty = true
+    }
+    function netSummary() {
+        const n = status.device_net || {}
+        if (n.wifi === undefined) return ""
+        const wifi = n.wifi ? "WiFi conectado (" + n.ip + ")" : "WiFi sin conectar"
+        const ble = n.ble ? "celular conectado por Bluetooth" : "Bluetooth esperando celular"
+        return wifi + " · " + ble
     }
     function textToKeys(t) {
         return t.split(",").map(s => s.trim()).filter(s => s.length > 0)
@@ -357,10 +375,71 @@ PlasmoidItem {
                         }
                     }
 
+                    // Dispositivo: pantalla de reposo, WiFi, clima
+                    Kirigami.Heading { level: 5; text: "Dispositivo"; Layout.topMargin: Kirigami.Units.largeSpacing }
+                    PC3.Label {
+                        Layout.fillWidth: true
+                        visible: text.length > 0
+                        opacity: 0.7
+                        wrapMode: Text.WordWrap
+                        font: Kirigami.Theme.smallFont
+                        text: root.netSummary()
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        PC3.Label { text: "Pantalla en reposo"; Layout.fillWidth: true }
+                        PC3.ComboBox {
+                            Layout.preferredWidth: Kirigami.Units.gridUnit * 11
+                            model: root.idleViewNames
+                            currentIndex: Math.max(0, root.idleViews.indexOf(root.deviceAt(root.rev).idle_view || "both"))
+                            onActivated: (i) => root.setDevice("idle_view", root.idleViews[i])
+                        }
+                    }
+                    PC3.Label {
+                        Layout.fillWidth: true
+                        opacity: 0.6
+                        wrapMode: Text.WordWrap
+                        font: Kirigami.Theme.smallFont
+                        text: "Sin la PC, la placa muestra siempre reloj y clima, y las teclas van al celular por Bluetooth."
+                    }
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: 2
+                        PC3.Label { text: "Red WiFi" }
+                        PC3.TextField {
+                            Layout.fillWidth: true
+                            placeholderText: "nombre de la red (2.4 GHz)"
+                            text: root.deviceAt(root.rev).wifi_ssid || ""
+                            onTextEdited: root.setDevice("wifi_ssid", text)
+                        }
+                        PC3.Label { text: "Contraseña" }
+                        PC3.TextField {
+                            Layout.fillWidth: true
+                            echoMode: TextInput.Password
+                            text: root.deviceAt(root.rev).wifi_pass || ""
+                            onTextEdited: root.setDevice("wifi_pass", text)
+                        }
+                        PC3.Label { text: "Ciudad" }
+                        PC3.TextField {
+                            Layout.fillWidth: true
+                            placeholderText: "ej: Córdoba, Argentina"
+                            text: root.deviceAt(root.rev).city || ""
+                            onTextEdited: root.setDevice("city", text)
+                        }
+                    }
+                    PC3.Label {
+                        Layout.fillWidth: true
+                        visible: (root.deviceAt(root.rev).place || "").length > 0
+                        opacity: 0.7
+                        wrapMode: Text.WordWrap
+                        font: Kirigami.Theme.smallFont
+                        text: "Clima de: " + (root.deviceAt(root.rev).place || "")
+                    }
+
                     // General
                     RowLayout {
                         Layout.topMargin: Kirigami.Units.largeSpacing
-                        PC3.Label { text: "Volver a stats tras"; Layout.fillWidth: true }
+                        PC3.Label { text: "Volver a reposo tras"; Layout.fillWidth: true }
                         PC3.SpinBox {
                             from: 3
                             to: 600

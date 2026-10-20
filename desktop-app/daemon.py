@@ -26,7 +26,9 @@ from PySide6.QtCore import QCoreApplication, QObject, QTimer, Signal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from macropad.config import DEFAULT_DEVICE  # noqa: E402
 from macropad.controller import Controller  # noqa: E402
+from macropad.geocode import CityNotFound, geocode  # noqa: E402
 from macropad.serial_link import SerialLink  # noqa: E402
 
 PORT = 47823
@@ -58,10 +60,33 @@ def valid_config(cfg) -> bool:
     layers = cfg.get("layers")
     if not isinstance(layers, list) or not layers:
         return False
+    if not isinstance(cfg.get("device", {}), dict):
+        return False
     return all(
         isinstance(l, dict) and isinstance(l.get("buttons"), list) and isinstance(l.get("encoders"), list)
         for l in layers
     )
+
+
+def resolve_city(cfg: dict, current: dict) -> str | None:
+    """Completa lat/lon/place si cambió la ciudad. Devuelve un error legible o None.
+    Se hace acá (hilo HTTP) y no en el hilo de Qt porque es una consulta de red."""
+    device = {**DEFAULT_DEVICE, **current, **cfg.get("device", {})}
+    if not device.get("ota_pass"):
+        device["ota_pass"] = current.get("ota_pass", "")
+    city = (device.get("city") or "").strip()
+    device["city"] = city
+    if not city:
+        device.update(lat=None, lon=None, place="")
+    elif city != current.get("city") or device.get("lat") is None:
+        try:
+            device["lat"], device["lon"], device["place"] = geocode(city)
+        except CityNotFound:
+            return f"No encontré la ciudad «{city}»"
+        except OSError:
+            return "No pude buscar la ciudad (¿sin internet?)"
+    cfg["device"] = device
+    return None
 
 
 def make_handler(token: str, link: SerialLink, controller: Controller, bridge: Bridge):
@@ -105,6 +130,7 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                     "layer_name": layer.get("name", ""),
                     "layers": [l.get("name", "") for l in controller.config["layers"]],
                     "stats": controller.last_stats,
+                    "device_net": controller.device_net if link.connected else {},
                 })
             elif self.path == "/config":
                 self._send(200, controller.config)
@@ -119,8 +145,12 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                 if not valid_config(data):
                     self._send(400, {"error": "configuración inválida"})
                     return
+                error = resolve_city(data, controller.config.get("device", {}))
+                if error:
+                    self._send(400, {"error": error})
+                    return
                 bridge.config_requested.emit(data)
-                self._send(200, {"ok": True})
+                self._send(200, {"ok": True, "device": data["device"]})
             elif self.path == "/layer":
                 if not isinstance(data, dict) or not isinstance(data.get("index"), int):
                     self._send(400, {"error": "falta index"})

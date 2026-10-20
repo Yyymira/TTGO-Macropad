@@ -25,5 +25,17 @@ constexpr EncoderPins ENCODER_PINS[NUM_ENCODERS] = {
 constexpr unsigned long BUTTON_DEBOUNCE_MS = 12;
 constexpr uint32_t SERIAL_BAUD = 115200;
 
-// Protocolo: una línea JSON por mensaje, en ambos sentidos.
-constexpr size_t JSON_LINE_MAX = 512;
+// Protocolo: una línea JSON por mensaje, en ambos sentidos. El mensaje más
+// grande es "keymap" (todas las capas), por eso el margen.
+constexpr size_t JSON_LINE_MAX = 4096;
+constexpr size_t SERIAL_RX_BUFFER = 4096;
+
+// Si la PC no manda nada en este tiempo, la placa pasa a modo autónomo:
+// reloj/clima en pantalla y teclas por Bluetooth.
+constexpr uint32_t HOST_TIMEOUT_MS = 5000;
+
+constexpr uint32_t WEATHER_PERIOD_MS = 15UL * 60 * 1000;
+constexpr uint32_t WEATHER_RETRY_MS = 60UL * 1000;
+constexpr uint32_t IDLE_ALTERNATE_MS = 10UL * 1000;  // modo "ambos": stats <-> clima
+constexpr uint32_t NET_REPORT_MS = 5000;
+constexpr const char *DEVICE_HOSTNAME = "ttgo-macropad";

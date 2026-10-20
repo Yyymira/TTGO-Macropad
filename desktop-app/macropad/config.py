@@ -3,6 +3,8 @@ y timeout de inactividad. Vive en ~/.config/ttgo-macropad/config.json."""
 
 import copy
 import json
+import os
+import secrets
 from pathlib import Path
 
 CONFIG_PATH = Path.home() / ".config" / "ttgo-macropad" / "config.json"
@@ -51,17 +53,50 @@ DEFAULT_CONFIG = {
 }
 
 
+# Ajustes que se copian a la placa (WiFi, clima, pantalla de reposo, OTA).
+DEFAULT_DEVICE = {
+    "idle_view": "both",  # "stats" | "weather" | "both"
+    "wifi_ssid": "",
+    "wifi_pass": "",
+    "city": "",
+    "place": "",  # nombre completo que devolvió el buscador de ciudades
+    "lat": None,
+    "lon": None,
+    "ota_pass": "",
+}
+
+
+def _with_device_defaults(config: dict) -> tuple[dict, bool]:
+    device = {**DEFAULT_DEVICE, **config.get("device", {})}
+    generated = False
+    if not device["ota_pass"]:
+        device["ota_pass"] = secrets.token_urlsafe(12)
+        generated = True
+    config["device"] = device
+    return config, generated
+
+
 def load_config() -> dict:
+    config = None
     if CONFIG_PATH.exists():
         try:
             data = json.loads(CONFIG_PATH.read_text())
             if data.get("layers"):
-                return data
+                config = data
         except (json.JSONDecodeError, OSError):
             pass
-    return copy.deepcopy(DEFAULT_CONFIG)
+    if config is None:
+        config = copy.deepcopy(DEFAULT_CONFIG)
+    config, generated = _with_device_defaults(config)
+    if generated:
+        save_config(config)  # la contraseña OTA tiene que ser estable entre arranques
+    return config
 
 
 def save_config(config: dict) -> None:
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CONFIG_PATH.write_text(json.dumps(config, indent=2, ensure_ascii=False))
+    # Incluye la contraseña del WiFi y la de OTA: solo legible por el usuario.
+    fd = os.open(CONFIG_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps(config, indent=2, ensure_ascii=False))
+    os.chmod(CONFIG_PATH, 0o600)
