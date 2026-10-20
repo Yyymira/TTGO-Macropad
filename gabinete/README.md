@@ -10,12 +10,13 @@ Diseño paramétrico en OpenSCAD (`gabinete.scad`). Medida exterior:
   "placa"). Los pines quedan al
   aire por abajo para soldar los cables directamente, sin PCB. Numeración
   (igual que en la app y la pantalla): fila de atrás 1-2-3, de adelante 4-5-6.
-- 2 EC11 atrás a la izquierda; la tapa tiene 1.6 mm ahí para que entren
+- 2 EC11 atrás a la izquierda (agujero de 9.4 mm, holgado); la tapa tiene 1.6 mm ahí para que entren
   arandela + tuerca en el buje M7.
 - La TTGO entra a presión desde abajo en un marco con trabas, con el
   display contra la ventana. El USB-C sale por el costado derecho. Las
-  paredes largas del marco tienen una apertura de 4 mm a 11 mm del extremo
-  USB para el botón lateral de la placa.
+  paredes largas del marco tienen una apertura de 6 mm a 10.5 mm del extremo
+  USB para el botón lateral de la placa, y la cara inferior de la tapa tiene
+  un rebaje entre los pulsadores para el cuerpo del conector USB-C.
 - 2 pulsadores sueltos que pasan por la tapa y apretan los botones
   integrados de la placa (GPIO0 y GPIO35): son los botones 7 y 8, también
   asignables desde la app (por defecto, capa anterior/siguiente).
@@ -45,9 +46,10 @@ Después imprimí las dos piezas de prueba (~15 min cada una):
   traba firme: si entra muy duro subí `mx_cut`; si queda flojo, bajalo de
   a 0.2 mm (el estándar de placa es 14.0).
 
-Ajustes ya hechos tras la primera prueba impresa: `mx_cut` = 15.0,
-`frame_extra_w` = 1.0 (marco 1 mm más ancho) y la apertura del botón lateral
-(`side_btn_gap`, `side_btn_from_end`).
+Ajustes ya hechos tras las pruebas impresas: `mx_cut` = 15.0,
+`frame_extra_w` = 1.0 (marco 1 mm más ancho), la apertura del botón lateral
+(`side_btn_gap`, `side_btn_from_end`), el rebaje del conector USB-C
+(`usb_conn_l`, `usb_conn_w`) y `enc_hole` = 9.4.
 
 ## Piezas (`stl/`, ya orientadas para imprimir)
 

@@ -31,8 +31,10 @@ disp_dy = 0;
 usb_z = 1.6;        // centro del USB-C por encima de la cara superior del PCB
 usb_gap = 0.5;      // extremo del PCB (lado USB) -> cara interna de la pared
 frame_extra_w = 1.0;   // holgura extra en el ancho del marco (medido en la prueba impresa)
-side_btn_gap = 4;      // apertura en las paredes largas para el botón lateral (sección A)
-side_btn_from_end = 11; // de esa apertura al extremo USB de la placa (sección B)
+side_btn_gap = 6;      // apertura en las paredes largas para el botón lateral (pedido: 4, agrandada tras la 2ª prueba)
+side_btn_from_end = 10.5; // de esa apertura al extremo USB de la placa (pedido: 11)
+usb_conn_l = 9.5;      // el conector USB-C de la placa se mete hasta acá desde el extremo (llega a los botones)
+usb_conn_w = 9.6;      // ancho del rebaje para el conector (entra justo entre los pulsadores)
 
 // ---------- Cherry MX ----------
 mx_cut = 15.0;      // agujero cuadrado (medido en la prueba impresa; el estándar es 14)
@@ -41,7 +43,7 @@ mx_pocket = 17;     // vaciado inferior para que las trabas puedan flexar
 mx_pitch = 19.05;
 
 // ---------- EC11 ----------
-enc_hole = 7.4;     // buje roscado M7
+enc_hole = 9.4;     // buje roscado M7 (+2 mm tras la 2ª prueba impresa)
 enc_panel = 1.6;    // espesor de tapa en el encoder (entra arandela + tuerca)
 enc_pocket = 14;    // vaciado inferior para el cuerpo del encoder
 
@@ -179,7 +181,7 @@ module tapa() {
                 cylinder(d = 6.4, h = H_b - (floor_t + pad_h + 0.3) + e);
             ttgo_frame();
         }
-        // Cherry MX: agujero 14x14 + vaciado inferior dejando 1.5 mm de "placa"
+        // Cherry MX: agujero mx_cut x mx_cut + vaciado inferior dejando 1.5 mm de "placa"
         for (p = sw_pos) translate([p.x, p.y, 0]) {
             translate([-mx_cut/2, -mx_cut/2, H_b - 1]) cube([mx_cut, mx_cut, lid_t + 2]);
             translate([-mx_pocket/2, -mx_pocket/2, H_b - 1]) cube([mx_pocket, mx_pocket, lid_t - mx_plate + 1]);
@@ -204,6 +206,9 @@ module tapa() {
         // agujeros para autorroscantes M3 en las torretas
         for (p = lid_screws) translate([p.x, p.y, floor_t + pad_h]) cylinder(d = 2.6, h = H_b - floor_t - pad_h + 1.5);
         usb_tunnel();
+        // rebaje en la cara inferior para el cuerpo del conector USB-C, que entra hasta los botones
+        translate([ttgo_x + pcb_l/2 - usb_conn_l, top_y - usb_conn_w/2, H_b - 1])
+            cube([usb_conn_l + 1, usb_conn_w, 1 + pl_pocket_h]);
     }
 }
 
