@@ -146,6 +146,7 @@ ejemplos: [docs/acciones.md](docs/acciones.md).
   minúscula, sin el prefijo), más los alias cómodos definidos en
   `macropad/injector.py` (`ctrl`, `shift`, `alt`, `super`, `vol+`, `vol-`,
   `mute`, `play`, `next`, `prev`, `brightnessup`, `brightnessdown`, etc).
+- `Ejecutar comando`: un comando o script, con bash (en Windows, cmd.exe).
 - `Capa siguiente` / `Capa anterior` / `Ir a capa N`
 
 ### Acciones de encoder

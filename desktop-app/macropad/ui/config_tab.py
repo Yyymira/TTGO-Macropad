@@ -27,6 +27,7 @@ from macropad.controller import Controller
 ACTION_CHOICES = [
     ("Ninguna", "none"),
     ("Tecla / atajo", "key"),
+    ("Ejecutar comando", "command"),
     ("Capa siguiente", "layer_next"),
     ("Capa anterior", "layer_prev"),
     ("Ir a capa N", "layer_set"),
@@ -37,6 +38,8 @@ def _action_to_combo_value(action: dict) -> tuple[str, str]:
     kind = action.get("action", "none")
     if kind == "key":
         return kind, ",".join(action.get("keys", []))
+    if kind == "command":
+        return kind, action.get("cmd", "")
     if kind == "layer_set":
         return kind, str(action.get("index", 0))
     return kind, ""
@@ -46,6 +49,8 @@ def _combo_value_to_action(kind: str, value: str) -> dict:
     if kind == "key":
         keys = [k.strip() for k in value.split(",") if k.strip()]
         return {"action": "key", "keys": keys}
+    if kind == "command":
+        return {"action": "command", "cmd": value.strip()}
     if kind == "layer_set":
         try:
             idx = int(value.strip() or 0)
@@ -62,7 +67,7 @@ class ButtonRow(QWidget):
         for text, _ in ACTION_CHOICES:
             self.combo.addItem(text)
         self.value_edit = QLineEdit()
-        self.value_edit.setPlaceholderText("ej: ctrl,t  o  playpause")
+        self.value_edit.setPlaceholderText("ej: ctrl,t  o  playpause  (o el comando a ejecutar)")
 
         row = QHBoxLayout(self)
         row.addWidget(QLabel(label), 0)
@@ -85,6 +90,8 @@ class ButtonRow(QWidget):
 class EncoderRow(QWidget):
     def __init__(self, label: str):
         super().__init__()
+        self.type_combo = QComboBox()
+        self.type_combo.addItems(["Teclas", "Comandos"])
         self.cw_edit = QLineEdit()
         self.cw_edit.setPlaceholderText("horario, ej: volumeup")
         self.ccw_edit = QLineEdit()
@@ -92,16 +99,26 @@ class EncoderRow(QWidget):
 
         row = QHBoxLayout(self)
         row.addWidget(QLabel(label), 0)
+        row.addWidget(self.type_combo, 0)
         row.addWidget(QLabel("Horario:"))
         row.addWidget(self.cw_edit, 1)
         row.addWidget(QLabel("Antihorario:"))
         row.addWidget(self.ccw_edit, 1)
 
     def set_mapping(self, mapping: dict) -> None:
-        self.cw_edit.setText(",".join(mapping.get("cw", [])))
-        self.ccw_edit.setText(",".join(mapping.get("ccw", [])))
+        if mapping.get("type") == "command":
+            self.type_combo.setCurrentIndex(1)
+            self.cw_edit.setText(mapping.get("cw_cmd", ""))
+            self.ccw_edit.setText(mapping.get("ccw_cmd", ""))
+        else:
+            self.type_combo.setCurrentIndex(0)
+            self.cw_edit.setText(",".join(mapping.get("cw", [])))
+            self.ccw_edit.setText(",".join(mapping.get("ccw", [])))
 
     def get_mapping(self) -> dict:
+        if self.type_combo.currentIndex() == 1:
+            return {"type": "command", "cw": [], "ccw": [],
+                    "cw_cmd": self.cw_edit.text().strip(), "ccw_cmd": self.ccw_edit.text().strip()}
         cw = [k.strip() for k in self.cw_edit.text().split(",") if k.strip()]
         ccw = [k.strip() for k in self.ccw_edit.text().split(",") if k.strip()]
         return {"cw": cw, "ccw": ccw}

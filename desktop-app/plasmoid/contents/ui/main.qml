@@ -14,8 +14,8 @@ PlasmoidItem {
     id: root
 
     readonly property string apiBase: "http://127.0.0.1:47823"
-    readonly property var actionKinds: ["none", "key", "layer_next", "layer_prev", "layer_set"]
-    readonly property var actionNames: ["Ninguna", "Tecla / atajo", "Capa siguiente", "Capa anterior", "Ir a capa…"]
+    readonly property var actionKinds: ["none", "key", "command", "layer_next", "layer_prev", "layer_set"]
+    readonly property var actionNames: ["Ninguna", "Tecla / atajo", "Ejecutar comando", "Capa siguiente", "Capa anterior", "Ir a capa…"]
     readonly property var buttonNames: ["Tecla 1", "Tecla 2", "Tecla 3", "Tecla 4", "Tecla 5", "Tecla 6",
                                         "Placa (GPIO0)", "Placa (GPIO35)",
                                         "Encoder 1 (apretar)", "Encoder 2 (apretar)"]
@@ -153,6 +153,14 @@ PlasmoidItem {
         while (l.encoders.length <= i) l.encoders.push({cw: [], ccw: []})
         l.encoders[i][dir] = keys
         dirty = true
+    }
+    function setEncoderType(i, type) {
+        const l = layerAt(editLayer)
+        if (!l) return
+        while (l.encoders.length <= i) l.encoders.push({cw: [], ccw: []})
+        l.encoders[i].type = type
+        dirty = true
+        rev++
     }
     function deviceAt(_rev) { return (draft && draft.device) ? draft.device : {} }
     function setDevice(field, value) {
@@ -310,7 +318,7 @@ PlasmoidItem {
                             Layout.fillWidth: true
                             PC3.Label {
                                 text: root.buttonNames[brow.index]
-                                Layout.preferredWidth: Kirigami.Units.gridUnit * 6
+                                Layout.preferredWidth: Kirigami.Units.gridUnit * 8
                                 elide: Text.ElideRight
                             }
                             PC3.ComboBox {
@@ -321,6 +329,7 @@ PlasmoidItem {
                                     const kind = root.actionKinds[i]
                                     const a = {action: kind}
                                     if (kind === "key") a.keys = []
+                                    if (kind === "command") a.cmd = ""
                                     if (kind === "layer_set") a.index = 0
                                     root.setButton(brow.index, a)
                                 }
@@ -332,6 +341,13 @@ PlasmoidItem {
                                 text: (brow.act.keys || []).join(", ")
                                 onTextEdited: root.setButtonField(brow.index, "keys", root.textToKeys(text))
                             }
+                            PC3.TextField {
+                                visible: brow.act.action === "command"
+                                Layout.fillWidth: true
+                                placeholderText: "ej: konsole  o  bash ~/scripts/algo.sh"
+                                text: brow.act.cmd || ""
+                                onTextEdited: root.setButtonField(brow.index, "cmd", text)
+                            }
                             PC3.SpinBox {
                                 visible: brow.act.action === "layer_set"
                                 from: 0
@@ -340,7 +356,7 @@ PlasmoidItem {
                                 onValueModified: root.setButtonField(brow.index, "index", value)
                             }
                             Item {
-                                visible: brow.act.action !== "key" && brow.act.action !== "layer_set"
+                                visible: ["key", "command", "layer_set"].indexOf(brow.act.action) < 0
                                 Layout.fillWidth: true
                             }
                         }
@@ -355,22 +371,33 @@ PlasmoidItem {
                             required property int index
                             readonly property var enc: root.encoderAt(index, root.rev, root.editLayer)
                             Layout.fillWidth: true
-                            PC3.Label { text: root.encoderNames[erow.index]; opacity: 0.8 }
+                            readonly property bool isCmd: enc.type === "command"
+                            RowLayout {
+                                Layout.fillWidth: true
+                                PC3.Label { text: root.encoderNames[erow.index]; opacity: 0.8; Layout.fillWidth: true }
+                                PC3.ComboBox {
+                                    model: ["Teclas", "Comandos"]
+                                    currentIndex: erow.isCmd ? 1 : 0
+                                    onActivated: (i) => root.setEncoderType(erow.index, i === 1 ? "command" : "keys")
+                                }
+                            }
                             RowLayout {
                                 Layout.fillWidth: true
                                 PC3.Label { text: "↻" }
                                 PC3.TextField {
                                     Layout.fillWidth: true
-                                    placeholderText: "horario, ej: volumeup"
-                                    text: (erow.enc.cw || []).join(", ")
-                                    onTextEdited: root.setEncoderKeys(erow.index, "cw", root.textToKeys(text))
+                                    placeholderText: erow.isCmd ? "comando al girar horario" : "horario, ej: volumeup"
+                                    text: erow.isCmd ? (erow.enc.cw_cmd || "") : (erow.enc.cw || []).join(", ")
+                                    onTextEdited: erow.isCmd ? root.setEncoderKeys(erow.index, "cw_cmd", text)
+                                                             : root.setEncoderKeys(erow.index, "cw", root.textToKeys(text))
                                 }
                                 PC3.Label { text: "↺" }
                                 PC3.TextField {
                                     Layout.fillWidth: true
-                                    placeholderText: "antihorario"
-                                    text: (erow.enc.ccw || []).join(", ")
-                                    onTextEdited: root.setEncoderKeys(erow.index, "ccw", root.textToKeys(text))
+                                    placeholderText: erow.isCmd ? "comando al girar antihorario" : "antihorario"
+                                    text: erow.isCmd ? (erow.enc.ccw_cmd || "") : (erow.enc.ccw || []).join(", ")
+                                    onTextEdited: erow.isCmd ? root.setEncoderKeys(erow.index, "ccw_cmd", text)
+                                                             : root.setEncoderKeys(erow.index, "ccw", root.textToKeys(text))
                                 }
                             }
                         }

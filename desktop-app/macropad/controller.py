@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 
 from macropad.config import load_config, save_config
 from macropad.injector import KeyInjector
+from macropad.runner import run_command
 from macropad.serial_link import SerialLink
 from macropad.stats import StatsReader
 
@@ -24,7 +25,13 @@ def action_label(action: dict) -> str:
         return "<< Capa"
     if kind == "layer_set":
         return f"Capa {action.get('index', 0)}"
+    if kind == "command":
+        return action.get("cmd", "").strip()[:14]
     return ""
+
+
+def encoder_is_command(mapping: dict) -> bool:
+    return mapping.get("type") == "command"
 
 
 def _compact_action(action: dict) -> dict:
@@ -43,7 +50,11 @@ def keymap_message(config: dict) -> dict:
         {
             "n": layer.get("name", ""),
             "b": [_compact_action(a) for a in layer.get("buttons", [])],
-            "e": [{"cw": e.get("cw", []), "ccw": e.get("ccw", [])} for e in layer.get("encoders", [])],
+            # los comandos solo existen con la PC: en Bluetooth ese encoder no manda nada
+            "e": [
+                {"cw": [], "ccw": []} if encoder_is_command(e) else {"cw": e.get("cw", []), "ccw": e.get("ccw", [])}
+                for e in layer.get("encoders", [])
+            ],
         }
         for layer in config["layers"]
     ]
@@ -146,6 +157,8 @@ class Controller(QObject):
         kind = action.get("action", "none")
         if kind == "key":
             self.injector.send_keys(action.get("keys", []))
+        elif kind == "command":
+            run_command(action.get("cmd", ""))
         elif kind == "layer_next":
             self.layer_index = (self.layer_index + 1) % len(self.config["layers"])
             self._send_layer_snapshot()
@@ -161,6 +174,9 @@ class Controller(QObject):
         if not (0 <= encoder_id < len(encoders)):
             return
         mapping = encoders[encoder_id]
+        if encoder_is_command(mapping):
+            run_command(mapping.get("cw_cmd", "") if delta > 0 else mapping.get("ccw_cmd", ""))
+            return
         keys = mapping.get("cw", []) if delta > 0 else mapping.get("ccw", [])
         self.injector.send_keys(keys)
 

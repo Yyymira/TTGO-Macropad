@@ -11,6 +11,7 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 |---|---|
 | Ninguna | Nada. |
 | Tecla / atajo | Aprieta una tecla o una combinación (ver abajo). |
+| Ejecutar comando | Ejecuta un comando o script (ver [Ejecutar comandos](#ejecutar-comandos)). |
 | Capa siguiente | Pasa a la capa siguiente; desde la última vuelve a la primera. |
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
@@ -21,8 +22,9 @@ cada encoder (apretar la perilla: "Encoder 1 (apretar)" y "Encoder 2
 asignado. En la pantalla, los pulsadores de los encoders aparecen en una
 columna a la izquierda solo en las capas donde tienen algo asignado.
 
-El giro de los encoders siempre manda teclas: una lista para el giro horario y otra para el
-antihorario. Cada "click" del encoder aprieta esa combinación una vez.
+El giro de cada encoder se configura con **Teclas** (una combinación para el
+giro horario y otra para el antihorario; cada "click" la aprieta una vez) o con
+**Comandos** (un comando para cada sentido, que se ejecuta en cada "click").
 
 ## Cómo escribir una tecla o un atajo
 
@@ -65,6 +67,37 @@ más las usa, son ideales para acciones a medida sin chocar con nada:
 3. Como atajo, tocá el botón del macropad: KDE lo registra como `F13`.
 
 Así un botón puede hacer cualquier cosa que se pueda escribir como comando.
+
+## Ejecutar comandos
+
+Con **Ejecutar comando** (en un botón) o **Comandos** (en un encoder), escribís
+el comando tal cual lo escribirías en una terminal:
+
+| Para… | Comando |
+|---|---|
+| Abrir una app | `konsole`, `dolphin`, `firefox`, `spotify` |
+| Correr un script tuyo | `bash ~/scripts/algo.sh` |
+| Abrir una página | `xdg-open https://github.com` |
+| Abrir una carpeta | `xdg-open ~/Descargas` |
+| Suspender la PC | `systemctl suspend` |
+| Volumen de a 5 % (encoder) | horario `wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+`, antihorario `wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-` |
+| Notificación de prueba | `notify-send "Macropad" "¡Funciona!"` |
+
+- Corre con **bash**, como tu usuario y desde tu carpeta personal: funcionan
+  `~`, variables, tuberías (`|`), `&&`, etc.
+- Se ejecuta en segundo plano: el macropad no espera a que termine y no se
+  ve la salida. Si querés ver qué hace, abrilo en una terminal:
+  `konsole --hold -e bash ~/scripts/algo.sh`.
+- No hace falta `sudo`. Si un comando lo necesita, no va a funcionar (no hay
+  dónde escribir la contraseña).
+- En la pantalla de la placa se ve el comando cortado a 14 caracteres.
+- En Windows se ejecuta con `cmd.exe` (ej: `notepad`, `start https://github.com`,
+  `C:\scripts\algo.bat`).
+- En modo Bluetooth (sin la PC) los comandos no hacen nada: el celular no
+  puede ejecutar cosas de tu PC.
+
+Los comandos quedan guardados en `~/.config/ttgo-macropad/config.json`, que
+solo tu usuario puede leer y modificar.
 
 ## Nombres de teclas
 
