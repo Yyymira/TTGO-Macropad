@@ -1,5 +1,7 @@
 # TTGO Macropad
 
+![TTGO Macropad terminado](docs/fotos/macropad-perspectiva.jpg)
+
 Mini teclado de macros con 6 teclas Cherry MX + 2 encoders rotativos sobre una placa
 **TTGO T-Display** (ESP32 + pantalla ST7789 1.14") — más los 2 botones
 integrados de la placa y el pulsador de cada encoder (si tus encoders lo traen), hasta 10 botones asignables —, programable desde una app
@@ -32,6 +34,14 @@ integrados de la placa ya funcionan).
 
 El gabinete imprimible en 3D (OpenSCAD paramétrico + STL listos) está en
 [gabinete/](gabinete/README.md).
+
+## Fotos
+
+| Reloj y clima | Stats de la PC |
+|---|---|
+| ![Reloj y clima](docs/fotos/macropad-reloj-clima.jpg) | ![Stats de la PC](docs/fotos/macropad-stats.jpg) |
+| **Por dentro** (gabinete impreso en PETG transparente, con la batería LiPo) | **Pantalla de reloj y clima** |
+| ![Vista de abajo](docs/fotos/macropad-abajo.jpg) | ![Pantalla de clima](docs/fotos/pantalla-clima.jpg) |
 
 ## Arquitectura
 
