@@ -136,6 +136,10 @@ salir de verdad, usar "Salir" del menú del ícono de bandeja.
 
 ### Acciones de botón disponibles
 
+Guía completa con todos los nombres de teclas, cómo pasar atajos de KDE y
+ejemplos: [docs/acciones.md](docs/acciones.md).
+
+
 - `Ninguna`
 - `Tecla / atajo`: lista de teclas separadas por coma (ej: `ctrl,t` o
   `playpause`). Nombres soportados: cualquier `KEY_*` de evdev (en
