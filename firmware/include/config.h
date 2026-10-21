@@ -27,7 +27,7 @@ constexpr EncoderPins ENCODER_PINS[NUM_ENCODERS] = {
 };
 
 constexpr unsigned long BUTTON_DEBOUNCE_MS = 12;
-constexpr uint32_t SERIAL_BAUD = 115200;
+constexpr uint32_t SERIAL_BAUD = 921600;  // el CH9102 llega a 4 Mbps; debe coincidir con serial_link.py
 
 // Protocolo: una línea JSON por mensaje, en ambos sentidos. El mensaje más
 // grande es "keymap" (todas las capas), por eso el margen.

@@ -54,7 +54,7 @@ La placa ESP32 de este modelo no tiene USB nativo (confirmado con
 puede ser un teclado HID por sí misma. Por eso la placa es un periférico
 "tonto" — lee botones/encoders y dibuja la pantalla — y toda la lógica
 (capas, mapeos, qué mostrar) vive en la app de escritorio, que le habla por
-un protocolo JSON-por-línea sobre serial USB a 115200 baud. El detalle del
+un protocolo JSON-por-línea sobre serial USB a 921600 baud. El detalle del
 protocolo está en los comentarios de `firmware/src/protocol.cpp` y
 `desktop-app/macropad/serial_link.py`.
 
@@ -70,7 +70,7 @@ python3 -m venv .venv          # si no existe todavía
 .venv/bin/pip install platformio
 .venv/bin/pio run                              # compilar
 .venv/bin/pio run -t upload --upload-port /dev/ttyACM0   # flashear
-.venv/bin/pio device monitor -p /dev/ttyACM0 -b 115200    # ver logs/eventos
+.venv/bin/pio device monitor -p /dev/ttyACM0 -b 921600    # ver logs/eventos
 ```
 
 ## App de escritorio (`desktop-app/`)

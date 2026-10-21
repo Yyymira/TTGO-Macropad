@@ -54,7 +54,7 @@ ESP32-D0WDQ6-V3 with a CH9102 serial bridge), so it can't be a USB HID
 keyboard by itself. That's why the board is a "dumb" peripheral: it reads
 buttons/encoders and draws the screen. All the logic (layers, mappings, what
 to show) lives in the desktop app, which talks to it with a JSON-per-line
-protocol over USB serial at 115200 baud. Protocol details are in the comments
+protocol over USB serial at 921600 baud. Protocol details are in the comments
 of `firmware/src/protocol.cpp` and `desktop-app/macropad/serial_link.py`.
 
 ## Firmware (`firmware/`)
@@ -69,7 +69,7 @@ python3 -m venv .venv          # if it doesn't exist yet
 .venv/bin/pip install platformio
 .venv/bin/pio run                              # build
 .venv/bin/pio run -t upload --upload-port /dev/ttyACM0   # flash
-.venv/bin/pio device monitor -p /dev/ttyACM0 -b 115200    # watch logs/events
+.venv/bin/pio device monitor -p /dev/ttyACM0 -b 921600    # watch logs/events
 ```
 
 Ready-made firmware binaries are attached to each

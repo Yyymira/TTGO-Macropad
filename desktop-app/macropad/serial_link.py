@@ -14,7 +14,7 @@ class SerialLink(QObject):
     event_received = Signal(dict)
     connected_changed = Signal(bool)
 
-    def __init__(self, port: str | None = None, baud: int = 115200):
+    def __init__(self, port: str | None = None, baud: int = 921600):
         super().__init__()
         self._port = port
         self._baud = baud
