@@ -1,5 +1,6 @@
 #include "display.h"
 
+#include "battery.h"
 #include "ble_kbd.h"
 #include "config.h"
 #include "net.h"
@@ -21,6 +22,10 @@ static uint8_t bothPhase = 0;  // modo "ambos": 0 = stats, 1 = clima
 static uint32_t lastPhaseMs = 0;
 static int lastDrawnMinute = -1;
 static bool otaActive = false;
+
+static bool lowWarned = false;  // el cartel de batería baja se muestra una vez por descarga
+static uint32_t warningUntilMs = 0;
+static bool dimmed = false;
 
 static const char *DAY_NAMES[] = {"Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"};
 
@@ -158,6 +163,43 @@ static void drawDegrees(const String &value, int x, int y, int font, uint16_t co
     tft.drawCircle(x + w + 3, y + 3, 2, color);
 }
 
+// Pila chica (20x9) con el nivel; "enchufada" muestra un rayo. Devuelve el ancho dibujado.
+static int drawBattery(int x, int y) {
+    const bool usb = batteryOnUsb();
+    const int pct = batteryPercent();
+    if (!usb && pct < 0) return 0;
+    uint16_t color = usb ? TFT_SKYBLUE : batteryLow() ? TFT_RED : pct <= 30 ? TFT_ORANGE : TFT_GREEN;
+    tft.drawRect(x, y, 18, 9, TFT_SILVER);
+    tft.fillRect(x + 18, y + 2, 2, 5, TFT_SILVER);
+    tft.fillRect(x + 1, y + 1, 16, 7, TFT_BLACK);
+    if (usb) {
+        tft.fillTriangle(x + 10, y + 1, x + 5, y + 5, x + 9, y + 5, color);
+        tft.fillTriangle(x + 8, y + 7, x + 13, y + 3, x + 9, y + 3, color);
+    } else {
+        int w = 16 * pct / 100;
+        if (w < 1) w = 1;
+        tft.fillRect(x + 1, y + 1, w, 7, color);
+    }
+    tft.setTextFont(1);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextColor(color, TFT_BLACK);
+    String txt = usb ? "USB" : String(pct) + "%";
+    tft.drawString(txt, x + 23, y + 1);
+    return 23 + tft.textWidth(txt);
+}
+
+static void renderLowBattery() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextFont(4);
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+    tft.drawString("Bateria baja", 120, 50);
+    tft.setTextFont(2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString("Queda " + String(batteryPercent()) + "% - conecta el cargador", 120, 84);
+    tft.setTextDatum(TL_DATUM);
+}
+
 static void renderWeather() {
     showingWeather = true;
     tft.fillScreen(TFT_BLACK);
@@ -200,6 +242,7 @@ static void renderWeather() {
         tft.setTextFont(2);
         tft.setTextColor(TFT_SILVER, TFT_BLACK);
         tft.drawString(date, 6, 58);
+        if (!hostPresent) drawBattery(6 + tft.textWidth(date, 2) + 10, 61);
     }
 
     if (!hasWeather) {
@@ -294,10 +337,12 @@ static void renderLayer() {
     tft.setTextFont(2);
     tft.drawString("Capa " + String(layerIndex) + ": " + layerName, 8, 4);
 
-    if (!hostPresent) {  // modo Bluetooth: indicar si hay un celular conectado
+    if (!hostPresent) {  // modo Bluetooth: batería y si hay un celular conectado
+        drawBattery(170, 7);
         tft.setTextDatum(TR_DATUM);
+        tft.setTextFont(2);
         tft.setTextColor(bleConnected() ? TFT_SKYBLUE : TFT_DARKGREY, TFT_BLACK);
-        tft.drawString(bleConnected() ? "BT" : "BT --", 234, 4);
+        tft.drawString(bleConnected() ? "BT" : "BT --", 166, 4);
     }
 
     // Grilla 3x2 para los Cherry MX (misma disposición que en el gabinete),
@@ -329,6 +374,10 @@ static void renderLayer() {
 
 static void render() {
     if (otaActive) return;
+    if (millis() < warningUntilMs) {
+        renderLowBattery();
+        return;
+    }
     if (currentMode == DisplayMode::Layer) {
         renderLayer();
     } else if (idleShowsWeather()) {
@@ -343,6 +392,10 @@ static void render() {
 void displaySetup() {
     tft.init();
     tft.setRotation(1);  // landscape, 240x135
+    // Backlight por PWM para poder bajarlo con batería crítica.
+    ledcSetup(BACKLIGHT_CHANNEL, 5000, 8);
+    ledcAttachPin(TFT_BL, BACKLIGHT_CHANNEL);
+    ledcWrite(BACKLIGHT_CHANNEL, 255);
     tft.fillScreen(TFT_BLACK);
     render();
 }
@@ -361,6 +414,25 @@ void displayLoop() {
         struct tm t;
         int minute = netLocalTime(t) ? t.tm_min : -1;
         if (minute != lastDrawnMinute || netConsumeWeatherUpdate()) render();
+    }
+
+    // Batería: cartel una vez al cruzar el umbral, brillo bajo en crítico.
+    if (batteryConsumeChange()) {
+        if (batteryLow() && !lowWarned) {
+            lowWarned = true;
+            warningUntilMs = now + 4000;
+        }
+        if (!batteryLow()) lowWarned = false;
+        bool dim = batteryCritical();
+        if (dim != dimmed) {
+            dimmed = dim;
+            ledcWrite(BACKLIGHT_CHANNEL, dim ? BACKLIGHT_DIM : 255);
+        }
+        if (!hostPresent && (currentMode == DisplayMode::Layer || showingWeather)) render();
+    }
+    if (warningUntilMs && now >= warningUntilMs) {
+        warningUntilMs = 0;
+        render();
     }
 
     static bool lastBle = false;

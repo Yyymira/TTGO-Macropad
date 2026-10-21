@@ -43,3 +43,13 @@ constexpr uint32_t WEATHER_RETRY_MS = 60UL * 1000;
 constexpr uint32_t IDLE_ALTERNATE_MS = 10UL * 1000;  // modo "ambos": stats <-> clima
 constexpr uint32_t NET_REPORT_MS = 5000;
 constexpr const char *DEVICE_HOSTNAME = "ttgo-macropad";
+
+// Batería (ver battery.h)
+constexpr uint8_t BATTERY_ADC_PIN = 34;
+constexpr uint8_t BATTERY_ADC_EN_PIN = 14;
+constexpr uint32_t BATTERY_SAMPLE_MS = 2000;
+constexpr float BATTERY_USB_VOLTS = 4.30;   // por encima: alimentada por USB (o cargando)
+constexpr int BATTERY_LOW_PCT = 15;         // aviso en pantalla
+constexpr int BATTERY_CRITICAL_PCT = 5;     // baja el brillo y apaga el WiFi
+constexpr uint8_t BACKLIGHT_DIM = 40;       // brillo en modo crítico (0-255)
+constexpr uint8_t BACKLIGHT_CHANNEL = 7;    // canal LEDC del backlight

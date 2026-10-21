@@ -1,5 +1,6 @@
 #include "protocol.h"
 
+#include "battery.h"
 #include "ble_kbd.h"
 #include "config.h"
 #include "display.h"
@@ -25,7 +26,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.2.0";
+    doc["fw"] = "1.3.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -55,6 +56,7 @@ void protocolSendNet() {
     doc["ip"] = netIp();
     doc["ble"] = bleConnected();
     doc["weather"] = netGetWeather(w);
+    doc["bat"] = batteryOnUsb() ? -1 : batteryPercent();
     sendDoc(doc);
 }
 

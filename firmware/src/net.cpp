@@ -139,8 +139,22 @@ void netLoop() {
     if (otaStarted) ArduinoOTA.handle();
 }
 
+static bool wifiEnabled = true;
+
+void netSetEnabled(bool enabled) {
+    if (enabled == wifiEnabled) return;
+    wifiEnabled = enabled;
+    if (enabled) {
+        WiFi.mode(WIFI_STA);
+        startWifi();
+    } else {
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+    }
+}
+
 void netApplySettings(bool wifiChanged, bool locationChanged) {
-    if (wifiChanged) startWifi();
+    if (wifiChanged && wifiEnabled) startWifi();
     if (otaStarted) ArduinoOTA.setPassword(settings.otaPass.c_str());
     if (wifiChanged || locationChanged) refreshRequested = true;
 }

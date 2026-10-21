@@ -178,6 +178,11 @@ contraseña y ciudad) y quedan guardados en la placa.
   en `~/.config/ttgo-macropad/config.json` (permisos 600, junto con la del WiFi).
   El cable USB sigue funcionando igual como respaldo.
 
+- **Batería**: sin la PC, la pantalla de reloj/clima y la de capas muestran
+  el nivel de la batería (o "USB" si está enchufada). Al llegar al 15 % aparece
+  un aviso de batería baja; al 5 % baja el brillo y apaga el WiFi para durar
+  un poco más (el reloj sigue andando, el clima deja de actualizarse).
+
 Para ver el reloj con la PC apagada, la placa necesita energía: muchas PCs
 cortan el USB al apagarse, así que hace falta una batería LiPo (la TTGO trae
 conector y cargador) o un cargador de celular.

@@ -135,7 +135,7 @@ class Controller(QObject):
             self._sync_device()
             self._enter_idle(force=True)
         elif etype == "net":
-            self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather")}
+            self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather", "bat")}
         elif etype == "button" and evt.get("state") == "down":
             self._mark_activity()
             self._run_button_action(evt.get("id", -1))

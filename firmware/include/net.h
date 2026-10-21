@@ -29,3 +29,5 @@ String netIp();
 bool netLocalTime(struct tm &out);
 bool netGetWeather(WeatherData &out);
 bool netConsumeWeatherUpdate();
+// Ahorro de energía con batería crítica: apaga el WiFi y lo vuelve a prender.
+void netSetEnabled(bool enabled);

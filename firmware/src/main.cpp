@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "battery.h"
 #include "ble_kbd.h"
 #include "config.h"
 #include "display.h"
@@ -34,6 +35,7 @@ void setup() {
     Serial.setRxBufferSize(SERIAL_RX_BUFFER);
     Serial.begin(SERIAL_BAUD);
     settingsLoad();
+    batterySetup();
     displaySetup();
     inputsSetup();
     inputsOnButton(onButton);
@@ -62,6 +64,8 @@ void loop() {
         protocolSendNet();
     }
 
+    batteryLoop();
+    netSetEnabled(!batteryCritical());
     standaloneLoop();
     netLoop();
     displayLoop();
