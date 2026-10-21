@@ -26,7 +26,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.8.1";
+    doc["fw"] = "1.8.2";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);

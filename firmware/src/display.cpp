@@ -203,10 +203,20 @@ static void drawViewIndicator(int x, int y) {
         tft.drawString("A", x + 1, y + 2);
         return;
     }
-    uint16_t c = viewOverride >= 0 ? TFT_ORANGE : TFT_DARKGREY;  // naranja = fijada con el botón
-    tft.fillCircle(x + 4, y + 3, 3, c);              // cabeza
-    tft.fillRect(x + 2, y + 5, 5, 2, c);             // ala
-    tft.drawLine(x + 4, y + 7, x + 4, y + 10, c);    // aguja
+    // Pin de 8x11 (diseño de Yyymira): R = cabeza, N = aguja, . = transparente.
+    static const char *const PIN[] = {
+        "RRRRRRRR", ".RRRRRR.", "..RRRR..", "..RRRR..", "..RRRR..", ".RRRRRR.",
+        "RRRRRRRR", "...NN...", "...NN...", "...NN...", "...NN...",
+    };
+    const bool byButton = viewOverride >= 0;  // en color si se fijó con el botón, gris si es por config
+    const uint16_t head = byButton ? tft.color565(200, 54, 60) : TFT_DARKGREY;
+    const uint16_t needle = byButton ? tft.color565(184, 252, 252) : TFT_DARKGREY;
+    for (int row = 0; row < 11; row++) {
+        for (int col = 0; col < 8; col++) {
+            char p = PIN[row][col];
+            if (p != '.') tft.drawPixel(x + col, y + row, p == 'R' ? head : needle);
+        }
+    }
 }
 
 static void renderLowBattery() {
