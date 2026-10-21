@@ -1,7 +1,9 @@
 # Qué puede hacer cada botón y encoder
 
-Todo se configura desde el widget de Plasma (sección de la capa → botones y
-encoders) y se aplica con **Guardar**.
+En Linux todo se configura desde el widget de Plasma (sección de la capa →
+botones y encoders) y se aplica con **Guardar**. En Windows, desde la pestaña
+**Configuración** de la app, con **Guardar y aplicar**; el formato es el mismo,
+pero entiende menos teclas (ver [En Windows](#en-windows)).
 
 ## Tipos de acción de un botón
 
@@ -143,6 +145,45 @@ y sin el `KEY_`: cualquiera de ellos funciona.
 
 Estos son los atajos por defecto de KDE Plasma 6. Si cambiaste alguno,
 mirá el tuyo en **Configuración del sistema → Teclado → Atajos de teclado**.
+
+## En Windows
+
+La app de Windows usa el mismo formato (teclas separadas por coma, capas,
+"Ir a capa" desde 0) y los atajos de Windows valen igual que los de KDE en
+Linux: `Win+E` se escribe `win, e`.
+
+Por ahora entiende **menos nombres de teclas** que Linux:
+
+- Modificadores: `ctrl`, `shift`, `alt` (y sus versiones `l…`/`r…`, como
+  `lctrl`, `rshift`, `ralt`), `win` (o `meta`, `super`).
+- Letras `a` … `z` y números `0` … `9`.
+- `f1` … `f12`.
+- `enter`, `esc`, `tab`, `space`, `backspace`, `delete`, flechas, `home`,
+  `end`, `pageup`, `pagedown`.
+- Multimedia: `volumeup`, `volumedown`, `mute`, `playpause`, `stop`,
+  `nextsong`, `previoussong` (con sus alias). El volumen muestra el cartelito
+  de Windows.
+- `brightnessup` / `brightnessdown`: solo solas (no combinadas con otras
+  teclas) y solo en pantallas que Windows deja controlar, normalmente las
+  de notebook. En un monitor de escritorio no hacen nada.
+
+No funcionan en Windows: F13–F24, `sysrq`, `insert`, `capslock`, `menu`,
+teclado numérico, signos de puntuación, `micmute`, `calc`/`mail`/`homepage`/
+`search`/`file` ni `zoomin`/`zoomout`. Un botón con alguna de esas teclas no
+hace nada (en Linux sí anda).
+
+Ejemplos con atajos de Windows:
+
+| Para… | Escribir |
+|---|---|
+| Explorador de archivos | `win, e` |
+| Escritorio | `win, d` |
+| Bloquear sesión | `win, l` |
+| Recorte de pantalla | `win, shift, s` |
+| Vista de tareas | `win, tab` |
+| Cambiar de escritorio virtual (encoder) | horario `win, ctrl, right`, antihorario `win, ctrl, left` |
+| Administrador de tareas | `ctrl, shift, esc` |
+| Configuración | `win, i` |
 
 ## Sin la PC: modo Bluetooth
 
