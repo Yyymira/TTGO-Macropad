@@ -18,8 +18,8 @@ static String layerName = "";
 static String layerLabels[NUM_BUTTONS];
 
 static bool hostPresent = false;
-static bool layerToPhone = false;
-static int8_t viewOverride = -1;  // pantalla de reposo fijada desde un botón  // capa con destino celular (con la PC presente)
+static bool layerToPhone = false;  // capa con destino celular (con la PC presente)
+static int8_t viewOverride = -1;   // pantalla de reposo fijada desde un botón
 static bool showingWeather = false;
 static uint8_t bothPhase = 0;  // modo "ambos": 0 = stats, 1 = clima
 static uint32_t lastPhaseMs = 0;
@@ -190,6 +190,25 @@ static int drawBattery(int x, int y) {
     return 23 + tft.textWidth(txt);
 }
 
+// Indicador chico de la pantalla de reposo (solo con la PC): "A" si alterna
+// sola entre stats y clima, un pin si quedó fija (por config o por botón).
+// (x, y) es la esquina superior izquierda de un cuadro de 8x11.
+static void drawViewIndicator(int x, int y) {
+    if (!hostPresent) return;
+    bool alternating = viewOverride < 0 && settings.idleView == IdleView::Both;
+    if (alternating) {
+        tft.setTextFont(1);
+        tft.setTextDatum(TL_DATUM);
+        tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        tft.drawString("A", x + 1, y + 2);
+        return;
+    }
+    uint16_t c = viewOverride >= 0 ? TFT_ORANGE : TFT_DARKGREY;  // naranja = fijada con el botón
+    tft.fillCircle(x + 4, y + 3, 3, c);              // cabeza
+    tft.fillRect(x + 2, y + 5, 5, 2, c);             // ala
+    tft.drawLine(x + 4, y + 7, x + 4, y + 10, c);    // aguja
+}
+
 static void renderLowBattery() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextDatum(MC_DATUM);
@@ -245,7 +264,12 @@ static void renderWeather() {
         tft.setTextFont(2);
         tft.setTextColor(TFT_SILVER, TFT_BLACK);
         tft.drawString(date, 6, 58);
-        if (!hostPresent) drawBattery(6 + tft.textWidth(date, 2) + 10, 61);
+        int afterDate = 6 + tft.textWidth(date, 2) + 10;
+        if (!hostPresent) {
+            drawBattery(afterDate, 61);
+        } else {
+            drawViewIndicator(afterDate, 60);
+        }
     }
 
     if (!hasWeather) {
@@ -300,6 +324,7 @@ static void renderStats() {
 
     drawGauge(58, 46, 40, 30, statCpu, "CPU");
     drawGauge(182, 46, 40, 30, statGpu, "GPU");
+    drawViewIndicator(116, 2);  // arriba al centro, entre los dos gauges
 
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);

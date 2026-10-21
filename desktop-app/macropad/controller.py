@@ -14,6 +14,9 @@ from macropad.serial_link import SerialLink
 from macropad.stats import StatsReader
 
 STATS_PUSH_INTERVAL_MS = 1000
+# Tras "cambiar pantalla de reposo" (suele estar en el pulsador de un encoder,
+# y al apretar la perilla se gira un poco), los giros no muestran la capa.
+VIEW_PRESS_QUIET_S = 0.5
 
 
 # Acción "idle_view": cada pulsación fija la pantalla de reposo en la siguiente
@@ -119,6 +122,7 @@ class Controller(QObject):
         self._auto_layer = False  # la capa activa la eligió la ventana, no el usuario
         self._manual_layer = 0  # a la que se vuelve al salir del programa
         self.view_override: str | None = None  # pantalla de reposo fijada con un botón
+        self._quiet_until = 0.0  # hasta cuándo los giros no cuentan como actividad
 
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
@@ -218,11 +222,20 @@ class Controller(QObject):
         elif etype == "net":
             self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather", "bat")}
         elif etype == "button" and evt.get("state") == "down":
-            self._mark_activity()
+            if self._button_kind(evt.get("id", -1)) == "idle_view":
+                # Cambia la pantalla de reposo: no tiene sentido mostrar la capa.
+                self._quiet_until = time.monotonic() + VIEW_PRESS_QUIET_S
+            else:
+                self._mark_activity()
             self._run_button_action(evt.get("id", -1))
         elif etype == "encoder":
-            self._mark_activity()
+            if time.monotonic() >= self._quiet_until:
+                self._mark_activity()
             self._run_encoder_action(evt.get("id", -1), evt.get("delta", 0))
+
+    def _button_kind(self, button_id: int) -> str:
+        buttons = self.current_layer.get("buttons", [])
+        return buttons[button_id].get("action", "none") if 0 <= button_id < len(buttons) else "none"
 
     def _mark_activity(self) -> None:
         timeout_s = self.config.get("idle_timeout_sec", 15)
