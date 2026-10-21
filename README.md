@@ -1,3 +1,5 @@
+[English](README.en.md) | **Español**
+
 # TTGO Macropad
 
 ![TTGO Macropad terminado](docs/fotos/macropad-perspectiva.jpg)
@@ -17,7 +19,11 @@ de escritorio en Python (Linux/Wayland/KDE).
   capa N", permitiendo tener varios set de atajos.
 - Los encoders inyectan teclas reales (volumen, brillo, o lo que el usuario
   quiera) vía un teclado virtual a nivel kernel (`evdev`/`uinput`), sin
-  necesitar X11 ni ydotool.
+  necesitar X11 ni ydotool. Los botones también pueden ejecutar comandos o
+  scripts.
+- La interfaz (widget de Plasma, app de Windows y la pantalla de la placa)
+  sigue el idioma del sistema: viene en español e inglés. Ver
+  [Idioma](#idioma).
 
 > **¿Tu encoder no tiene pulsador?** El EC11 se vende con pulsador (5 pines:
 > 3 de un lado y 2 del otro) y sin pulsador (solo 3 pines); los clones baratos
@@ -155,12 +161,11 @@ salir de verdad, usar "Salir" del menú del ícono de bandeja.
 Guía completa con todos los nombres de teclas, cómo pasar atajos de KDE y
 ejemplos: [docs/acciones.md](docs/acciones.md).
 
-
 - `Ninguna`
 - `Tecla / atajo`: lista de teclas separadas por coma (ej: `ctrl,t` o
   `playpause`). Nombres soportados: cualquier `KEY_*` de evdev (en
   minúscula, sin el prefijo), más los alias cómodos definidos en
-  `macropad/injector.py` (`ctrl`, `shift`, `alt`, `super`, `vol+`, `vol-`,
+  `macropad/injector_linux.py` (`ctrl`, `shift`, `alt`, `super`, `vol+`, `vol-`,
   `mute`, `play`, `next`, `prev`, `brightnessup`, `brightnessdown`, etc).
 - `Ejecutar comando`: un comando o script, con bash (en Windows, cmd.exe).
 - `Capa siguiente` / `Capa anterior` / `Ir a capa N`
@@ -205,6 +210,21 @@ Para ver el reloj con la PC apagada, la placa necesita energía: muchas PCs
 cortan el USB al apagarse, así que hace falta una batería LiPo (la TTGO trae
 conector y cargador) o un cargador de celular.
 
+## Idioma
+
+La app, el servicio, el widget de Plasma y la pantalla de la placa siguen el
+idioma del sistema: el de Plasma para el widget, `LANG` para el servicio en
+Linux y el idioma de Windows para la app de Windows. La placa recibe el idioma
+del servicio y lo recuerda, así que en modo Bluetooth sigue usando el último.
+Si tu idioma no está traducido, todo aparece en inglés.
+
+Para sumar un idioma hay que agregar sus textos en tres lugares:
+
+- `desktop-app/macropad/i18n.py` (app y servicio)
+- `desktop-app/plasmoid/contents/ui/Translations.js` (widget)
+- `firmware/src/i18n.cpp` (pantalla de la placa; solo ASCII, las fuentes de
+  la pantalla no tienen tildes)
+
 ## Estado del proyecto
 
 - [x] Firmware base: lectura de botones/encoders, display con pantalla idle
@@ -225,5 +245,6 @@ conector y cargador) o un cargador de celular.
       firmware sin cable y la placa vuelve sola.
 - [x] Acción "Ejecutar comando" e indicador de batería.
 - [x] Teclado Bluetooth probado con un celular.
+- [x] Interfaz en español e inglés, según el idioma del sistema.
 - [ ] Verificar la lectura de batería usándola desenchufada.
 - [ ] Probar la app en Windows.

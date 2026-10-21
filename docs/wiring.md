@@ -1,3 +1,5 @@
+[English](wiring.en.md) | **Español**
+
 # Cableado — TTGO T-Display (ESP32)
 
 Placa confirmada por sondeo directo (`esptool chip-id`): **ESP32-D0WDQ6-V3**, sin USB
@@ -25,6 +27,7 @@ nativo (puente serie CH9102), display ST7789 1.14" 240x135.
 | Display RST | 23 |
 | Display BL (backlight) | 4 |
 | Batería (ADC) | 34 |
+| Habilita la lectura de batería | 14 (no sale a los pines) |
 | USB-Serial (UART0 TX/RX) | 1 / 3 |
 
 ## Pinout para el macropad

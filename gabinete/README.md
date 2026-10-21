@@ -1,3 +1,5 @@
+[English](README.en.md) | **Español**
+
 # Gabinete imprimible
 
 ![Ensamble](img/ensamble.png)
@@ -26,8 +28,9 @@ Diseño paramétrico en OpenSCAD (`gabinete.scad`). Medida exterior:
 
 ## Antes de imprimir todo: medir y probar
 
-Las medidas de la TTGO son estimadas de las especificaciones, no de tu
-placa. Con un calibre, verificá y corregí al principio de `gabinete.scad`:
+Las medidas de la TTGO están ajustadas con piezas de prueba sobre la placa
+del autor (T-Display V1.1). Las placas pueden variar, así que conviene
+verificarlas con un calibre y corregirlas al principio de `gabinete.scad`:
 
 | Parámetro | Qué medir |
 |---|---|
