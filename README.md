@@ -222,5 +222,6 @@ conector y cargador) o un cargador de celular.
 - [x] Actualización por WiFi (OTA) probada: `firmware/ota_upload.sh` sube el
       firmware sin cable y la placa vuelve sola.
 - [x] Acción "Ejecutar comando" e indicador de batería.
-- [ ] Probar el teclado Bluetooth con un celular, la lectura de batería
-      usándola desenchufada y la app en Windows.
+- [x] Teclado Bluetooth probado con un celular.
+- [ ] Verificar la lectura de batería usándola desenchufada.
+- [ ] Probar la app en Windows.
