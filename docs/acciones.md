@@ -17,8 +17,8 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 
 Son 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
 cada encoder (apretar la perilla: "Encoder 1 (apretar)" y "Encoder 2
-(apretar)"). Los 10 se configuran igual y vienen sin nada asignado los del
-encoder. En la pantalla, los pulsadores de los encoders aparecen en una
+(apretar)"). Se configuran todos igual; los de los encoders vienen sin nada
+asignado. En la pantalla, los pulsadores de los encoders aparecen en una
 columna a la izquierda solo en las capas donde tienen algo asignado.
 
 El giro de los encoders siempre manda teclas: una lista para el giro horario y otra para el
