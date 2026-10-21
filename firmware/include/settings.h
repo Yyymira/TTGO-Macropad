@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <math.h>
 
+#include "i18n.h"
+
 // Pantalla de reposo cuando la PC está conectada (sin PC siempre es clima).
 enum class IdleView : uint8_t { Stats = 0, Weather = 1, Both = 2 };
 
@@ -17,6 +19,7 @@ struct DeviceSettings {
     int32_t utcOffset = INT32_MIN;  // segundos; INT32_MIN = desconocido
     IdleView idleView = IdleView::Both;
     uint16_t idleTimeoutSec = 15;
+    Lang lang = Lang::En;
 };
 
 extern DeviceSettings settings;

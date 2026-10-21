@@ -3,6 +3,7 @@
 #include "battery.h"
 #include "ble_kbd.h"
 #include "config.h"
+#include "i18n.h"
 #include "net.h"
 #include "settings.h"
 
@@ -27,7 +28,6 @@ static bool lowWarned = false;  // el cartel de batería baja se muestra una vez
 static uint32_t warningUntilMs = 0;
 static bool dimmed = false;
 
-static const char *DAY_NAMES[] = {"Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"};
 
 static void drawBar(int x, int y, int w, int h, int pct, uint16_t color) {
     pct = constrain(pct, 0, 100);
@@ -85,17 +85,17 @@ static Sky skyOf(int code) {
 }
 
 static const char *skyText(int code) {
-    if (code == 0) return "Despejado";
-    if (code == 1) return "Casi despejado";
-    if (code == 2) return "Algo nublado";
-    if (code >= 80 && code <= 82) return "Chaparrones";
+    if (code == 0) return tr(Str::SkyClear);
+    if (code == 1) return tr(Str::SkyMostlyClear);
+    if (code == 2) return tr(Str::SkyPartlyCloudy);
+    if (code >= 80 && code <= 82) return tr(Str::SkyShowers);
     switch (skyOf(code)) {
-        case Sky::Fog: return "Niebla";
-        case Sky::Drizzle: return "Llovizna";
-        case Sky::Rain: return "Lluvia";
-        case Sky::Snow: return "Nieve";
-        case Sky::Storm: return "Tormenta";
-        default: return "Nublado";
+        case Sky::Fog: return tr(Str::SkyFog);
+        case Sky::Drizzle: return tr(Str::SkyDrizzle);
+        case Sky::Rain: return tr(Str::SkyRain);
+        case Sky::Snow: return tr(Str::SkySnow);
+        case Sky::Storm: return tr(Str::SkyStorm);
+        default: return tr(Str::SkyCloudy);
     }
 }
 
@@ -193,10 +193,10 @@ static void renderLowBattery() {
     tft.setTextDatum(MC_DATUM);
     tft.setTextFont(4);
     tft.setTextColor(TFT_RED, TFT_BLACK);
-    tft.drawString("Bateria baja", 120, 50);
+    tft.drawString(tr(Str::BatteryLow), 120, 50);
     tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.drawString("Queda " + String(batteryPercent()) + "% - conecta el cargador", 120, 84);
+    tft.drawString(String(batteryPercent()) + "% " + tr(Str::BatteryLeft), 120, 84);
     tft.setTextDatum(TL_DATUM);
 }
 
@@ -216,16 +216,16 @@ static void renderWeather() {
         tft.setTextFont(2);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         if (settings.wifiSsid.isEmpty()) {
-            tft.drawString("Configura WiFi y ciudad", 120, 58);
-            tft.drawString("desde el panel de la PC", 120, 78);
+            tft.drawString(tr(Str::SetupWifiCity1), 120, 58);
+            tft.drawString(tr(Str::SetupWifiCity2), 120, 78);
         } else if (!netWifiConnected()) {
-            tft.drawString("Conectando a WiFi...", 120, 58);
+            tft.drawString(tr(Str::ConnectingWifi), 120, 58);
             tft.setTextColor(TFT_SILVER, TFT_BLACK);
             tft.drawString(settings.wifiSsid, 120, 78);
         } else if (isnan(settings.lat)) {
-            tft.drawString("Falta configurar la ciudad", 120, 67);
+            tft.drawString(tr(Str::MissingCity), 120, 67);
         } else {
-            tft.drawString("Buscando hora y clima...", 120, 67);
+            tft.drawString(tr(Str::FetchingWeather), 120, 67);
         }
         tft.setTextDatum(TL_DATUM);
         return;
@@ -238,7 +238,8 @@ static void renderWeather() {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString(hhmm, 2, 4);
         char date[16];
-        snprintf(date, sizeof date, "%s %02d/%02d", DAY_NAMES[t.tm_wday], t.tm_mday, t.tm_mon + 1);
+        int d1 = dayFirstDates() ? t.tm_mday : t.tm_mon + 1, d2 = dayFirstDates() ? t.tm_mon + 1 : t.tm_mday;
+        snprintf(date, sizeof date, "%s %02d/%02d", dayName(t.tm_wday), d1, d2);
         tft.setTextFont(2);
         tft.setTextColor(TFT_SILVER, TFT_BLACK);
         tft.drawString(date, 6, 58);
@@ -249,7 +250,7 @@ static void renderWeather() {
         tft.setTextFont(2);
         tft.setTextColor(TFT_SILVER, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
-        tft.drawString("Sin datos del clima", 120, 104);
+        tft.drawString(tr(Str::NoWeather), 120, 104);
         tft.setTextDatum(TL_DATUM);
         return;
     }
@@ -259,7 +260,7 @@ static void renderWeather() {
     drawDegrees(String((int)lroundf(w.temp)), 184, 6, 4, TFT_WHITE);
     tft.setTextFont(2);
     tft.setTextColor(TFT_CYAN, TFT_BLACK);
-    tft.drawString("Hum " + String(w.humidity) + "%", 184, 34);
+    tft.drawString(String(tr(Str::Humidity)) + " " + String(w.humidity) + "%", 184, 34);
     tft.setTextColor(TFT_SILVER, TFT_BLACK);
     tft.setTextDatum(TR_DATUM);
     tft.drawString(skyText(w.code), 236, 58);
@@ -272,7 +273,7 @@ static void renderWeather() {
         if (i > 0) tft.drawFastVLine(i * 80, 80, 52, TFT_DARKGREY);
         tft.setTextFont(2);
         tft.setTextColor(TFT_SILVER, TFT_BLACK);
-        tft.drawString(i == 0 ? "Hoy" : DAY_NAMES[w.days[i].wday], cx, 80);
+        tft.drawString(i == 0 ? tr(Str::Today) : dayName(w.days[i].wday), cx, 80);
         drawWeatherIcon(cx, 104, 9, w.days[i].code);
         String range = String((int)lroundf(w.days[i].tmax)) + " / " + String((int)lroundf(w.days[i].tmin));
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -291,7 +292,7 @@ static void renderStats() {
         tft.setTextDatum(TL_DATUM);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextFont(2);
-        tft.drawString("Esperando datos...", 8, 60);
+        tft.drawString(tr(Str::WaitingData), 8, 60);
         return;
     }
 
@@ -335,7 +336,7 @@ static void renderLayer() {
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
     tft.setTextFont(2);
-    tft.drawString("Capa " + String(layerIndex) + ": " + layerName, 8, 4);
+    tft.drawString(String(tr(Str::Layer)) + " " + String(layerIndex) + ": " + layerName, 8, 4);
 
     if (!hostPresent) {  // modo Bluetooth: batería y si hay un celular conectado
         drawBattery(170, 7);
@@ -485,7 +486,7 @@ void displayOtaProgress(int pct) {
         tft.setTextDatum(MC_DATUM);
         tft.setTextFont(4);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("Actualizando...", 120, 42);
+        tft.drawString(tr(Str::Updating), 120, 42);
     }
     drawBar(20, 70, 200, 18, pct, TFT_GREEN);
     tft.setTextDatum(MC_DATUM);
@@ -502,7 +503,7 @@ void displayOtaEnd(bool ok) {
     tft.setTextDatum(MC_DATUM);
     tft.setTextFont(4);
     tft.setTextColor(ok ? TFT_GREEN : TFT_RED, TFT_BLACK);
-    tft.drawString(ok ? "Listo, reiniciando" : "Error en la subida", 120, 67);
+    tft.drawString(ok ? tr(Str::UpdateDone) : tr(Str::UpdateError), 120, 67);
     tft.setTextDatum(TL_DATUM);
     if (!ok) {
         delay(2000);

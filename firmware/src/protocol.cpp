@@ -26,7 +26,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.3.0";
+    doc["fw"] = "1.4.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -99,6 +99,14 @@ static void applySettings(JsonDocument &doc) {
         settings.idleTimeoutSec = timeout;
         settings.utcOffset = offset;
         changed = true;
+    }
+
+    if (doc["lang"].is<const char *>()) {
+        Lang lang = langFromCode(doc["lang"]);
+        if (lang != settings.lang) {
+            settings.lang = lang;
+            changed = true;
+        }
     }
 
     if (changed) settingsSave();  // solo si cambió algo: cuida la flash

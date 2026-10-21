@@ -4,6 +4,8 @@ salir de verdad se hace desde el menú del ícono."""
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
+from macropad.i18n import tr
+
 
 def _fallback_icon() -> QIcon:
     pixmap = QPixmap(32, 32)
@@ -24,9 +26,9 @@ def install_tray(window: QMainWindow) -> QSystemTrayIcon:
     tray.setToolTip("TTGO Macropad")
 
     menu = QMenu()
-    show_action = menu.addAction("Mostrar ventana")
+    show_action = menu.addAction(tr("Show window"))
     show_action.triggered.connect(window.showNormal)
-    quit_action = menu.addAction("Salir")
+    quit_action = menu.addAction(tr("Quit"))
     quit_action.triggered.connect(QApplication.instance().quit)
     tray.setContextMenu(menu)
 
@@ -42,7 +44,7 @@ def install_tray(window: QMainWindow) -> QSystemTrayIcon:
     def close_event(event) -> None:
         event.ignore()
         window.hide()
-        tray.showMessage("TTGO Macropad", "Sigue corriendo en la bandeja.", icon, 2000)
+        tray.showMessage("TTGO Macropad", tr("Still running in the tray."), icon, 2000)
 
     window.closeEvent = close_event
     return tray

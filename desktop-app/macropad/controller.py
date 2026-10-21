@@ -7,6 +7,7 @@ import time
 from PySide6.QtCore import QObject, Signal, QTimer
 
 from macropad.config import load_config, save_config
+from macropad.i18n import LANG, tr
 from macropad.injector import KeyInjector
 from macropad.runner import run_command
 from macropad.serial_link import SerialLink
@@ -20,11 +21,11 @@ def action_label(action: dict) -> str:
     if kind == "key":
         return "+".join(k.upper() for k in action.get("keys", []))[:14]
     if kind == "layer_next":
-        return "Capa >>"
+        return tr("Layer >>")
     if kind == "layer_prev":
-        return "<< Capa"
+        return tr("<< Layer")
     if kind == "layer_set":
-        return f"Capa {action.get('index', 0)}"
+        return tr("Layer {n}", n=action.get("index", 0))
     if kind == "command":
         return action.get("cmd", "").strip()[:14]
     return ""
@@ -71,6 +72,7 @@ def settings_message(config: dict) -> dict:
         "idle_view": device.get("idle_view", "both"),
         "idle_timeout": config.get("idle_timeout_sec", 15),
         "utc_offset": time.localtime().tm_gmtoff,  # hora local mientras el clima no la confirma
+        "lang": LANG,  # idioma de la pantalla de la placa
     }
     if device.get("lat") is not None and device.get("lon") is not None:
         msg["lat"] = device["lat"]

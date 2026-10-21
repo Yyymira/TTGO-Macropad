@@ -7,6 +7,8 @@ import os
 import secrets
 from pathlib import Path
 
+from macropad.i18n import tr
+
 CONFIG_PATH = Path.home() / ".config" / "ttgo-macropad" / "config.json"
 
 NUM_BUTTONS = 10  # 0-5: Cherry MX (grilla 3x2), 6-7: integrados de la placa, 8-9: pulsador de los encoders
@@ -35,7 +37,7 @@ DEFAULT_CONFIG = {
             ],
         },
         {
-            "name": "Navegador",
+            "name": tr("Browser"),
             "buttons": [
                 {"action": "key", "keys": ["ctrl", "t"]},
                 {"action": "key", "keys": ["ctrl", "w"]},

@@ -23,14 +23,15 @@ from PySide6.QtWidgets import (
 
 from macropad.config import NUM_BUTTONS, NUM_ENCODERS
 from macropad.controller import Controller
+from macropad.i18n import tr
 
 ACTION_CHOICES = [
-    ("Ninguna", "none"),
-    ("Tecla / atajo", "key"),
-    ("Ejecutar comando", "command"),
-    ("Capa siguiente", "layer_next"),
-    ("Capa anterior", "layer_prev"),
-    ("Ir a capa N", "layer_set"),
+    (tr("None"), "none"),
+    (tr("Key / shortcut"), "key"),
+    (tr("Run command"), "command"),
+    (tr("Next layer"), "layer_next"),
+    (tr("Previous layer"), "layer_prev"),
+    (tr("Go to layer N"), "layer_set"),
 ]
 
 
@@ -67,7 +68,7 @@ class ButtonRow(QWidget):
         for text, _ in ACTION_CHOICES:
             self.combo.addItem(text)
         self.value_edit = QLineEdit()
-        self.value_edit.setPlaceholderText("ej: ctrl,t  o  playpause  (o el comando a ejecutar)")
+        self.value_edit.setPlaceholderText(tr("e.g. ctrl,t  or  playpause  (or the command to run)"))
 
         row = QHBoxLayout(self)
         row.addWidget(QLabel(label), 0)
@@ -91,18 +92,18 @@ class EncoderRow(QWidget):
     def __init__(self, label: str):
         super().__init__()
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["Teclas", "Comandos"])
+        self.type_combo.addItems([tr("Keys"), tr("Commands")])
         self.cw_edit = QLineEdit()
-        self.cw_edit.setPlaceholderText("horario, ej: volumeup")
+        self.cw_edit.setPlaceholderText(tr("clockwise, e.g. volumeup"))
         self.ccw_edit = QLineEdit()
-        self.ccw_edit.setPlaceholderText("antihorario, ej: volumedown")
+        self.ccw_edit.setPlaceholderText(tr("counterclockwise, e.g. volumedown"))
 
         row = QHBoxLayout(self)
         row.addWidget(QLabel(label), 0)
         row.addWidget(self.type_combo, 0)
-        row.addWidget(QLabel("Horario:"))
+        row.addWidget(QLabel(tr("Clockwise:")))
         row.addWidget(self.cw_edit, 1)
-        row.addWidget(QLabel("Antihorario:"))
+        row.addWidget(QLabel(tr("Counterclockwise:")))
         row.addWidget(self.ccw_edit, 1)
 
     def set_mapping(self, mapping: dict) -> None:
@@ -131,11 +132,11 @@ class ConfigTab(QWidget):
         self.draft = copy.deepcopy(controller.config)
 
         self.layer_list = QListWidget()
-        btn_add = QPushButton("+ Capa")
+        btn_add = QPushButton(tr("+ Layer"))
         btn_add.clicked.connect(self.add_layer)
-        btn_del = QPushButton("- Capa")
+        btn_del = QPushButton(tr("- Layer"))
         btn_del.clicked.connect(self.remove_layer)
-        btn_rename = QPushButton("Renombrar")
+        btn_rename = QPushButton(tr("Rename"))
         btn_rename.clicked.connect(self.rename_layer)
 
         layer_buttons = QHBoxLayout()
@@ -144,22 +145,22 @@ class ConfigTab(QWidget):
         layer_buttons.addWidget(btn_rename)
 
         left = QVBoxLayout()
-        left.addWidget(QLabel("Capas"))
+        left.addWidget(QLabel(tr("Layers")))
         left.addWidget(self.layer_list)
         left.addLayout(layer_buttons)
 
-        names = [f"Tecla {i + 1}" for i in range(6)] + ["Placa (GPIO0)", "Placa (GPIO35)",
-                                                         "Encoder 1 (apretar)", "Encoder 2 (apretar)"]
+        names = [tr("Key {n}", n=i + 1) for i in range(6)] + [
+            tr("Board (GPIO0)"), tr("Board (GPIO35)"), tr("Encoder 1 (press)"), tr("Encoder 2 (press)")]
         self.button_rows = [ButtonRow(name) for name in names[:NUM_BUTTONS]]
-        buttons_box = QGroupBox("Botones de la capa seleccionada")
+        buttons_box = QGroupBox(tr("Buttons of the selected layer"))
         buttons_layout = QVBoxLayout()
         for row in self.button_rows:
             buttons_layout.addWidget(row)
         buttons_box.setLayout(buttons_layout)
 
-        enc_names = ["Encoder 1 (atrás)", "Encoder 2 (adelante)"]
+        enc_names = [tr("Encoder 1 (back)"), tr("Encoder 2 (front)")]
         self.encoder_rows = [EncoderRow(name) for name in enc_names[:NUM_ENCODERS]]
-        encoders_box = QGroupBox("Encoders de la capa seleccionada")
+        encoders_box = QGroupBox(tr("Encoders of the selected layer"))
         encoders_layout = QVBoxLayout()
         for row in self.encoder_rows:
             encoders_layout.addWidget(row)
@@ -170,9 +171,9 @@ class ConfigTab(QWidget):
         self.idle_spin.setSuffix(" s")
 
         global_form = QFormLayout()
-        global_form.addRow("Timeout de inactividad (vuelve a stats):", self.idle_spin)
+        global_form.addRow(tr("Idle timeout (back to stats):"), self.idle_spin)
 
-        save_btn = QPushButton("Guardar y aplicar")
+        save_btn = QPushButton(tr("Save and apply"))
         save_btn.clicked.connect(self.save)
 
         right = QVBoxLayout()
@@ -228,7 +229,7 @@ class ConfigTab(QWidget):
             row.set_mapping(encoders[i] if i < len(encoders) else {"cw": [], "ccw": []})
 
     def add_layer(self) -> None:
-        name, ok = QInputDialog.getText(self, "Nueva capa", "Nombre de la capa:")
+        name, ok = QInputDialog.getText(self, tr("New layer"), tr("Layer name:"))
         if not ok or not name.strip():
             return
         self.draft["layers"].append(
@@ -244,7 +245,7 @@ class ConfigTab(QWidget):
     def remove_layer(self) -> None:
         index = self._current_layer_index()
         if index < 0 or len(self.draft["layers"]) <= 1:
-            QMessageBox.warning(self, "No se puede borrar", "Tiene que quedar al menos una capa.")
+            QMessageBox.warning(self, tr("Can't delete"), tr("There must be at least one layer."))
             return
         del self.draft["layers"][index]
         self._last_index = -1
@@ -256,7 +257,7 @@ class ConfigTab(QWidget):
         if index < 0:
             return
         current_name = self.draft["layers"][index].get("name", "")
-        name, ok = QInputDialog.getText(self, "Renombrar capa", "Nombre:", text=current_name)
+        name, ok = QInputDialog.getText(self, tr("Rename layer"), tr("Name:"), text=current_name)
         if ok and name.strip():
             self.draft["layers"][index]["name"] = name.strip()
             self._refresh_layer_list()
@@ -266,4 +267,4 @@ class ConfigTab(QWidget):
         self._save_form_into_draft(self._current_layer_index())
         self.draft["idle_timeout_sec"] = self.idle_spin.value()
         self.controller.reload_config(copy.deepcopy(self.draft))
-        QMessageBox.information(self, "Listo", "Configuración guardada y aplicada.")
+        QMessageBox.information(self, tr("Done"), tr("Settings saved and applied."))

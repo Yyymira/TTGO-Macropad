@@ -10,18 +10,20 @@ import org.kde.plasma.components as PC3
 import org.kde.plasma.plasma5support as P5Support
 import org.kde.kirigami as Kirigami
 
+import "Translations.js" as T
+
 PlasmoidItem {
     id: root
 
     readonly property string apiBase: "http://127.0.0.1:47823"
     readonly property var actionKinds: ["none", "key", "command", "layer_next", "layer_prev", "layer_set"]
-    readonly property var actionNames: ["Ninguna", "Tecla / atajo", "Ejecutar comando", "Capa siguiente", "Capa anterior", "Ir a capa…"]
-    readonly property var buttonNames: ["Tecla 1", "Tecla 2", "Tecla 3", "Tecla 4", "Tecla 5", "Tecla 6",
-                                        "Placa (GPIO0)", "Placa (GPIO35)",
-                                        "Encoder 1 (apretar)", "Encoder 2 (apretar)"]
-    readonly property var encoderNames: ["Encoder 1 (atrás)", "Encoder 2 (adelante)"]
+    readonly property var actionNames: [T.tr("None"), T.tr("Key / shortcut"), T.tr("Run command"), T.tr("Next layer"), T.tr("Previous layer"), T.tr("Go to layer…")]
+    readonly property var buttonNames: [1, 2, 3, 4, 5, 6].map(n => T.tr("Key {n}", {n: n})).concat([
+                                        T.tr("Board (GPIO0)"), T.tr("Board (GPIO35)"),
+                                        T.tr("Encoder 1 (press)"), T.tr("Encoder 2 (press)")])
+    readonly property var encoderNames: [T.tr("Encoder 1 (back)"), T.tr("Encoder 2 (front)")]
     readonly property var idleViews: ["stats", "weather", "both"]
-    readonly property var idleViewNames: ["Solo stats", "Solo reloj y clima", "Ambos (alternando)"]
+    readonly property var idleViewNames: [T.tr("Stats only"), T.tr("Clock and weather only"), T.tr("Both (alternating)")]
 
     property string token: ""
     property bool daemonUp: false
@@ -35,9 +37,9 @@ PlasmoidItem {
     Plasmoid.icon: "input-keyboard"
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     toolTipMainText: "TTGO Macropad"
-    toolTipSubText: !daemonUp ? "El servicio no está corriendo"
-                  : !status.connected ? "Placa desconectada"
-                  : "Capa activa: " + (status.layer_name || "")
+    toolTipSubText: !daemonUp ? T.tr("The service is not running")
+                  : !status.connected ? T.tr("Board disconnected")
+                  : T.tr("Active layer: {name}", {name: status.layer_name || ""})
 
     onExpandedChanged: {
         if (root.expanded) {
@@ -74,7 +76,7 @@ PlasmoidItem {
             daemonUp = true
             if (xhr.status === 401) { token = ""; readToken(); return }
             if (xhr.status !== 200) {
-                try { message = JSON.parse(xhr.responseText).error } catch (e) { message = "Error " + xhr.status }
+                try { message = JSON.parse(xhr.responseText).error } catch (e) { message = T.tr("Error {code}", {code: xhr.status}) }
                 return
             }
             if (onOk) onOk(JSON.parse(xhr.responseText))
@@ -105,7 +107,7 @@ PlasmoidItem {
         api("POST", "/config", draft, (res) => {
             if (res.device) draft.device = res.device  // trae la ubicación resuelta
             dirty = false
-            message = "Guardado"
+            message = T.tr("Saved")
             rev++
             poll()
         })
@@ -172,8 +174,8 @@ PlasmoidItem {
     function netSummary() {
         const n = status.device_net || {}
         if (n.wifi === undefined) return ""
-        const wifi = n.wifi ? "WiFi conectado (" + n.ip + ")" : "WiFi sin conectar"
-        const ble = n.ble ? "celular conectado por Bluetooth" : "Bluetooth esperando celular"
+        const wifi = n.wifi ? T.tr("WiFi connected ({ip})", {ip: n.ip}) : T.tr("WiFi not connected")
+        const ble = n.ble ? T.tr("phone connected via Bluetooth") : T.tr("Bluetooth waiting for a phone")
         return wifi + " · " + ble
     }
     function textToKeys(t) {
@@ -183,7 +185,7 @@ PlasmoidItem {
         if (!draft) return
         const buttons = buttonNames.map(() => ({action: "none"}))
         const encoders = encoderNames.map(() => ({cw: [], ccw: []}))
-        draft.layers.push({name: "Capa " + (draft.layers.length + 1), buttons: buttons, encoders: encoders})
+        draft.layers.push({name: T.tr("Layer {n}", {n: draft.layers.length + 1}), buttons: buttons, encoders: encoders})
         editLayer = draft.layers.length - 1
         dirty = true
         rev++
@@ -218,13 +220,13 @@ PlasmoidItem {
                 Kirigami.Heading {
                     level: 4
                     Layout.fillWidth: true
-                    text: !root.daemonUp ? "Servicio detenido"
-                        : root.status.connected ? "Placa conectada" : "Placa desconectada"
+                    text: !root.daemonUp ? T.tr("Service stopped")
+                        : root.status.connected ? T.tr("Board connected") : T.tr("Board disconnected")
                 }
                 PC3.Label {
                     visible: root.daemonUp && root.status.connected === true
                     opacity: 0.7
-                    text: root.status.mode === "layer" ? "Mostrando: " + root.status.layer_name : "Mostrando stats"
+                    text: root.status.mode === "layer" ? T.tr("Showing: {name}", {name: root.status.layer_name}) : T.tr("Showing stats")
                 }
             }
             PC3.Label {
@@ -242,7 +244,7 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 visible: !root.daemonUp
                 wrapMode: Text.WordWrap
-                text: "No se puede contactar al servicio. Iniciarlo con:\nsystemctl --user start ttgo-macropad"
+                text: T.tr("Can't reach the service. Start it with:") + "\nsystemctl --user start ttgo-macropad"
             }
 
             Kirigami.Separator { Layout.fillWidth: true; visible: root.draft !== null }
@@ -258,7 +260,7 @@ PlasmoidItem {
                     spacing: Kirigami.Units.smallSpacing
 
                     // Capas
-                    Kirigami.Heading { level: 5; text: "Capas" }
+                    Kirigami.Heading { level: 5; text: T.tr("Layers") }
                     Repeater {
                         model: root.rev >= 0 && root.draft ? root.draft.layers.length : 0
                         delegate: RowLayout {
@@ -279,7 +281,7 @@ PlasmoidItem {
                             PC3.ToolButton {
                                 icon.name: "media-playback-start"
                                 display: PC3.AbstractButton.IconOnly
-                                text: "Mostrar esta capa en la placa"
+                                text: T.tr("Show this layer on the board")
                                 PC3.ToolTip.text: text
                                 PC3.ToolTip.visible: hovered
                                 enabled: !root.dirty
@@ -290,7 +292,7 @@ PlasmoidItem {
                     RowLayout {
                         PC3.TextField {
                             Layout.fillWidth: true
-                            placeholderText: "Nombre de la capa"
+                            placeholderText: T.tr("Layer name")
                             text: { const l = root.layerAt(root.editLayer, root.rev); return l ? l.name : "" }
                             onTextEdited: {
                                 const l = root.layerAt(root.editLayer)
@@ -298,17 +300,17 @@ PlasmoidItem {
                             }
                             onEditingFinished: root.rev++
                         }
-                        PC3.ToolButton { icon.name: "list-add"; text: "Agregar"; onClicked: root.addLayer() }
+                        PC3.ToolButton { icon.name: "list-add"; text: T.tr("Add"); onClicked: root.addLayer() }
                         PC3.ToolButton {
                             icon.name: "list-remove"
-                            text: "Borrar"
+                            text: T.tr("Delete")
                             enabled: root.draft !== null && root.draft.layers.length > 1
                             onClicked: root.removeLayer()
                         }
                     }
 
                     // Botones
-                    Kirigami.Heading { level: 5; text: "Botones"; Layout.topMargin: Kirigami.Units.largeSpacing }
+                    Kirigami.Heading { level: 5; text: T.tr("Buttons"); Layout.topMargin: Kirigami.Units.largeSpacing }
                     Repeater {
                         model: root.buttonNames.length
                         delegate: RowLayout {
@@ -337,14 +339,14 @@ PlasmoidItem {
                             PC3.TextField {
                                 visible: brow.act.action === "key"
                                 Layout.fillWidth: true
-                                placeholderText: "ej: ctrl, t"
+                                placeholderText: T.tr("e.g. ctrl, t")
                                 text: (brow.act.keys || []).join(", ")
                                 onTextEdited: root.setButtonField(brow.index, "keys", root.textToKeys(text))
                             }
                             PC3.TextField {
                                 visible: brow.act.action === "command"
                                 Layout.fillWidth: true
-                                placeholderText: "ej: konsole  o  bash ~/scripts/algo.sh"
+                                placeholderText: T.tr("e.g. konsole  or  bash ~/scripts/thing.sh")
                                 text: brow.act.cmd || ""
                                 onTextEdited: root.setButtonField(brow.index, "cmd", text)
                             }
@@ -363,7 +365,7 @@ PlasmoidItem {
                     }
 
                     // Encoders
-                    Kirigami.Heading { level: 5; text: "Encoders"; Layout.topMargin: Kirigami.Units.largeSpacing }
+                    Kirigami.Heading { level: 5; text: T.tr("Encoders"); Layout.topMargin: Kirigami.Units.largeSpacing }
                     Repeater {
                         model: root.encoderNames.length
                         delegate: ColumnLayout {
@@ -376,7 +378,7 @@ PlasmoidItem {
                                 Layout.fillWidth: true
                                 PC3.Label { text: root.encoderNames[erow.index]; opacity: 0.8; Layout.fillWidth: true }
                                 PC3.ComboBox {
-                                    model: ["Teclas", "Comandos"]
+                                    model: [T.tr("Keys"), T.tr("Commands")]
                                     currentIndex: erow.isCmd ? 1 : 0
                                     onActivated: (i) => root.setEncoderType(erow.index, i === 1 ? "command" : "keys")
                                 }
@@ -386,7 +388,7 @@ PlasmoidItem {
                                 PC3.Label { text: "↻" }
                                 PC3.TextField {
                                     Layout.fillWidth: true
-                                    placeholderText: erow.isCmd ? "comando al girar horario" : "horario, ej: volumeup"
+                                    placeholderText: erow.isCmd ? T.tr("command on clockwise turn") : T.tr("clockwise, e.g. volumeup")
                                     text: erow.isCmd ? (erow.enc.cw_cmd || "") : (erow.enc.cw || []).join(", ")
                                     onTextEdited: erow.isCmd ? root.setEncoderKeys(erow.index, "cw_cmd", text)
                                                              : root.setEncoderKeys(erow.index, "cw", root.textToKeys(text))
@@ -394,7 +396,7 @@ PlasmoidItem {
                                 PC3.Label { text: "↺" }
                                 PC3.TextField {
                                     Layout.fillWidth: true
-                                    placeholderText: erow.isCmd ? "comando al girar antihorario" : "antihorario"
+                                    placeholderText: erow.isCmd ? T.tr("command on counterclockwise turn") : T.tr("counterclockwise")
                                     text: erow.isCmd ? (erow.enc.ccw_cmd || "") : (erow.enc.ccw || []).join(", ")
                                     onTextEdited: erow.isCmd ? root.setEncoderKeys(erow.index, "ccw_cmd", text)
                                                              : root.setEncoderKeys(erow.index, "ccw", root.textToKeys(text))
@@ -404,7 +406,7 @@ PlasmoidItem {
                     }
 
                     // Dispositivo: pantalla de reposo, WiFi, clima
-                    Kirigami.Heading { level: 5; text: "Dispositivo"; Layout.topMargin: Kirigami.Units.largeSpacing }
+                    Kirigami.Heading { level: 5; text: T.tr("Device"); Layout.topMargin: Kirigami.Units.largeSpacing }
                     PC3.Label {
                         Layout.fillWidth: true
                         visible: text.length > 0
@@ -415,7 +417,7 @@ PlasmoidItem {
                     }
                     RowLayout {
                         Layout.fillWidth: true
-                        PC3.Label { text: "Pantalla en reposo"; Layout.fillWidth: true }
+                        PC3.Label { text: T.tr("Idle screen"); Layout.fillWidth: true }
                         PC3.ComboBox {
                             Layout.preferredWidth: Kirigami.Units.gridUnit * 11
                             model: root.idleViewNames
@@ -428,29 +430,29 @@ PlasmoidItem {
                         opacity: 0.6
                         wrapMode: Text.WordWrap
                         font: Kirigami.Theme.smallFont
-                        text: "Sin la PC, la placa muestra siempre reloj y clima, y las teclas van al celular por Bluetooth."
+                        text: T.tr("Without the PC, the board always shows clock and weather, and keys go to the phone over Bluetooth.")
                     }
                     GridLayout {
                         Layout.fillWidth: true
                         columns: 2
-                        PC3.Label { text: "Red WiFi" }
+                        PC3.Label { text: T.tr("WiFi network") }
                         PC3.TextField {
                             Layout.fillWidth: true
-                            placeholderText: "nombre de la red (2.4 GHz)"
+                            placeholderText: T.tr("network name (2.4 GHz)")
                             text: root.deviceAt(root.rev).wifi_ssid || ""
                             onTextEdited: root.setDevice("wifi_ssid", text)
                         }
-                        PC3.Label { text: "Contraseña" }
+                        PC3.Label { text: T.tr("Password") }
                         PC3.TextField {
                             Layout.fillWidth: true
                             echoMode: TextInput.Password
                             text: root.deviceAt(root.rev).wifi_pass || ""
                             onTextEdited: root.setDevice("wifi_pass", text)
                         }
-                        PC3.Label { text: "Ciudad" }
+                        PC3.Label { text: T.tr("City") }
                         PC3.TextField {
                             Layout.fillWidth: true
-                            placeholderText: "ej: Córdoba, Argentina"
+                            placeholderText: T.tr("e.g. London, United Kingdom")
                             text: root.deviceAt(root.rev).city || ""
                             onTextEdited: root.setDevice("city", text)
                         }
@@ -461,13 +463,13 @@ PlasmoidItem {
                         opacity: 0.7
                         wrapMode: Text.WordWrap
                         font: Kirigami.Theme.smallFont
-                        text: "Clima de: " + (root.deviceAt(root.rev).place || "")
+                        text: T.tr("Weather for: {place}", {place: root.deviceAt(root.rev).place || ""})
                     }
 
                     // General
                     RowLayout {
                         Layout.topMargin: Kirigami.Units.largeSpacing
-                        PC3.Label { text: "Volver a reposo tras"; Layout.fillWidth: true }
+                        PC3.Label { text: T.tr("Back to idle after"); Layout.fillWidth: true }
                         PC3.SpinBox {
                             from: 3
                             to: 600
@@ -486,17 +488,17 @@ PlasmoidItem {
                 PC3.Label {
                     Layout.fillWidth: true
                     opacity: 0.7
-                    text: root.dirty ? "Cambios sin guardar" : root.message
+                    text: root.dirty ? T.tr("Unsaved changes") : root.message
                     elide: Text.ElideRight
                 }
                 PC3.Button {
-                    text: "Descartar"
+                    text: T.tr("Discard")
                     icon.name: "edit-undo"
                     enabled: root.dirty
                     onClicked: root.loadConfig()
                 }
                 PC3.Button {
-                    text: "Guardar"
+                    text: T.tr("Save")
                     icon.name: "document-save"
                     enabled: root.dirty
                     onClicked: root.saveConfig()

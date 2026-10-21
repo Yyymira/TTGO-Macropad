@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from macropad.config import DEFAULT_DEVICE  # noqa: E402
 from macropad.controller import Controller  # noqa: E402
 from macropad.geocode import CityNotFound, geocode  # noqa: E402
+from macropad.i18n import tr  # noqa: E402
 from macropad.serial_link import SerialLink  # noqa: E402
 
 PORT = 47823
@@ -82,9 +83,9 @@ def resolve_city(cfg: dict, current: dict) -> str | None:
         try:
             device["lat"], device["lon"], device["place"] = geocode(city)
         except CityNotFound:
-            return f"No encontré la ciudad «{city}»"
+            return tr("Couldn't find the city “{city}”", city=city)
         except OSError:
-            return "No pude buscar la ciudad (¿sin internet?)"
+            return tr("Couldn't look up the city (no internet?)")
     cfg["device"] = device
     return None
 
@@ -106,7 +107,7 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
             sent = self.headers.get("Authorization", "")
             if secrets.compare_digest(sent, f"Bearer {token}"):
                 return True
-            self._send(401, {"error": "token inválido"})
+            self._send(401, {"error": tr("invalid token")})
             return False
 
         def _read_json(self):
@@ -135,7 +136,7 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
             elif self.path == "/config":
                 self._send(200, controller.config)
             else:
-                self._send(404, {"error": "no existe"})
+                self._send(404, {"error": tr("not found")})
 
         def do_POST(self):
             if not self._authorized():
@@ -143,7 +144,7 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
             data = self._read_json()
             if self.path == "/config":
                 if not valid_config(data):
-                    self._send(400, {"error": "configuración inválida"})
+                    self._send(400, {"error": tr("invalid configuration")})
                     return
                 error = resolve_city(data, controller.config.get("device", {}))
                 if error:
@@ -153,12 +154,12 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                 self._send(200, {"ok": True, "device": data["device"]})
             elif self.path == "/layer":
                 if not isinstance(data, dict) or not isinstance(data.get("index"), int):
-                    self._send(400, {"error": "falta index"})
+                    self._send(400, {"error": tr("missing index")})
                     return
                 bridge.layer_requested.emit(data["index"])
                 self._send(200, {"ok": True})
             else:
-                self._send(404, {"error": "no existe"})
+                self._send(404, {"error": tr("not found")})
 
     return Handler
 

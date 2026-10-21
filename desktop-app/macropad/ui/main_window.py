@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from macropad.controller import Controller
+from macropad.i18n import tr
 from macropad.serial_link import SerialLink
 from macropad.ui.config_tab import ConfigTab
 
@@ -25,9 +26,9 @@ class StatusTab(QWidget):
         self.link = link
         self.controller = controller
 
-        self.conn_label = QLabel("Desconectado")
+        self.conn_label = QLabel(tr("Disconnected"))
         self.conn_label.setStyleSheet("color: red; font-weight: bold;")
-        self.state_label = QLabel("Modo: idle — Capa: -")
+        self.state_label = QLabel(tr("Mode: {mode} — Layer: {layer}", mode="idle", layer="-"))
 
         self.log = QPlainTextEdit()
         self.log.setReadOnly(True)
@@ -46,12 +47,12 @@ class StatusTab(QWidget):
     @Slot(bool)
     def on_connected_changed(self, connected: bool) -> None:
         if connected:
-            self.conn_label.setText("Conectado")
+            self.conn_label.setText(tr("Connected"))
             self.conn_label.setStyleSheet("color: green; font-weight: bold;")
         else:
-            self.conn_label.setText("Desconectado")
+            self.conn_label.setText(tr("Disconnected"))
             self.conn_label.setStyleSheet("color: red; font-weight: bold;")
-        self._append(f"[conexión] {'conectado' if connected else 'desconectado'}")
+        self._append(tr("[connection] {state}", state=tr("connected") if connected else tr("disconnected")))
 
     @Slot(dict)
     def on_event(self, event: dict) -> None:
@@ -59,7 +60,7 @@ class StatusTab(QWidget):
 
     def _refresh_state(self, *_args) -> None:
         layer = self.controller.current_layer.get("name", "-")
-        self.state_label.setText(f"Modo: {self.controller.mode} — Capa: {layer}")
+        self.state_label.setText(tr("Mode: {mode} — Layer: {layer}", mode=self.controller.mode, layer=layer))
 
     def _append(self, text: str) -> None:
         ts = time.strftime("%H:%M:%S")
@@ -73,6 +74,6 @@ class MainWindow(QMainWindow):
         self.resize(760, 520)
 
         tabs = QTabWidget()
-        tabs.addTab(StatusTab(link, controller), "Estado")
-        tabs.addTab(ConfigTab(controller), "Configuración")
+        tabs.addTab(StatusTab(link, controller), tr("Status"))
+        tabs.addTab(ConfigTab(controller), tr("Settings"))
         self.setCentralWidget(tabs)

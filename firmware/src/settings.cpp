@@ -19,6 +19,7 @@ void settingsLoad() {
     settings.utcOffset = prefs.getInt("utc", INT32_MIN);
     settings.idleView = static_cast<IdleView>(prefs.getUChar("view", static_cast<uint8_t>(IdleView::Both)));
     settings.idleTimeoutSec = prefs.getUShort("idle", 15);
+    settings.lang = static_cast<Lang>(prefs.getUChar("lang", static_cast<uint8_t>(Lang::En)));
     prefs.end();
 }
 
@@ -32,6 +33,7 @@ void settingsSave() {
     prefs.putInt("utc", settings.utcOffset);
     prefs.putUChar("view", static_cast<uint8_t>(settings.idleView));
     prefs.putUShort("idle", settings.idleTimeoutSec);
+    prefs.putUChar("lang", static_cast<uint8_t>(settings.lang));
     prefs.end();
 }
 

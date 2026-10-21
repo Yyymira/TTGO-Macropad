@@ -1,5 +1,7 @@
 #include "standalone.h"
 
+#include "i18n.h"
+
 #include "ble_kbd.h"
 #include "config.h"
 #include "display.h"
@@ -30,9 +32,9 @@ static String labelFor(JsonVariantConst action) {
         }
         return s.substring(0, 14);
     }
-    if (strcmp(kind, "layer_next") == 0) return "Capa >>";
-    if (strcmp(kind, "layer_prev") == 0) return "<< Capa";
-    if (strcmp(kind, "layer_set") == 0) return "Capa " + String(action["i"] | 0);
+    if (strcmp(kind, "layer_next") == 0) return tr(Str::LayerNext);
+    if (strcmp(kind, "layer_prev") == 0) return tr(Str::LayerPrev);
+    if (strcmp(kind, "layer_set") == 0) return String(tr(Str::Layer)) + " " + String(action["i"] | 0);
     return "";
 }
 
