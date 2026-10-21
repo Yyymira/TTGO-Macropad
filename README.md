@@ -28,9 +28,7 @@ de escritorio en Python (Linux/Wayland/KDE).
 > pulsaciones fantasma.
 
 Ver [docs/schematic.html](docs/schematic.html) (esquemático visual) o
-[docs/wiring.md](docs/wiring.md) para el pinout y la lista de compras —
-**todavía falta cablear las 6 teclas Cherry MX + 2 encoders** (los 2 botones
-integrados de la placa ya funcionan).
+[docs/wiring.md](docs/wiring.md) para el pinout y la lista de compras.
 
 El gabinete imprimible en 3D (OpenSCAD paramétrico + STL listos) está en
 [gabinete/](gabinete/README.md).
@@ -216,8 +214,13 @@ conector y cargador) o un cargador de celular.
 - [x] Probado de punta a punta con los 2 botones integrados de la placa
       (play/pause real sobre un video de YouTube, cambio de capa, vuelta
       automática a stats).
-- [ ] Cablear las 6 teclas Cherry MX y los 2 encoders (ver
-      [docs/wiring.md](docs/wiring.md)) y probar esa parte.
+- [x] 6 teclas Cherry MX y 2 encoders cableados ([docs/wiring.md](docs/wiring.md))
+      y probados.
 - [x] Linux: servicio de fondo con arranque automático + widget de Plasma.
-- [x] Firmware: WiFi, reloj/clima, teclado Bluetooth en modo autónomo y OTA.
-- [ ] Probar WiFi/clima/OTA con la red real y el Bluetooth con el celular.
+- [x] Gabinete impreso y armado, ajustado con piezas de prueba (ver [Fotos](#fotos)).
+- [x] WiFi y reloj/clima funcionando con la red real.
+- [x] Actualización por WiFi (OTA) probada: `firmware/ota_upload.sh` sube el
+      firmware sin cable y la placa vuelve sola.
+- [x] Acción "Ejecutar comando" e indicador de batería.
+- [ ] Probar el teclado Bluetooth con un celular, la lectura de batería
+      usándola desenchufada y la app en Windows.
