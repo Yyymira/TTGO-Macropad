@@ -194,6 +194,8 @@ contraseña y ciudad) y quedan guardados en la placa.
   en `~/.config/ttgo-macropad/config.json` (permisos 600, junto con la del WiFi).
   El cable USB sigue funcionando igual como respaldo.
 
+  ![Actualización por WiFi en curso](docs/fotos/actualizacion-ota.jpg)
+
 - **Batería**: sin la PC, la pantalla de reloj/clima y la de capas muestran
   el nivel de la batería (o "USB" si está enchufada). Al llegar al 15 % aparece
   un aviso de batería baja; al 5 % baja el brillo y apaga el WiFi para durar
