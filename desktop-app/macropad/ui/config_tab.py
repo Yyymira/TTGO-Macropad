@@ -170,7 +170,11 @@ class ConfigTab(QWidget):
         self.idle_spin.setRange(3, 600)
         self.idle_spin.setSuffix(" s")
 
+        self.target_combo = QComboBox()
+        self.target_combo.addItems([tr("PC"), tr("Phone (Bluetooth)")])
+
         global_form = QFormLayout()
+        global_form.addRow(tr("Keys go to:"), self.target_combo)
         global_form.addRow(tr("Idle timeout (back to stats):"), self.idle_spin)
 
         save_btn = QPushButton(tr("Save and apply"))
@@ -198,7 +202,7 @@ class ConfigTab(QWidget):
         self.layer_list.blockSignals(True)
         self.layer_list.clear()
         for layer in self.draft["layers"]:
-            self.layer_list.addItem(layer.get("name", "Sin nombre"))
+            self.layer_list.addItem(layer.get("name", tr("Unnamed")))
         self.layer_list.blockSignals(False)
 
     def _current_layer_index(self) -> int:
@@ -210,6 +214,7 @@ class ConfigTab(QWidget):
         layer = self.draft["layers"][index]
         layer["buttons"] = [row.get_action() for row in self.button_rows]
         layer["encoders"] = [row.get_mapping() for row in self.encoder_rows]
+        layer["target"] = "phone" if self.target_combo.currentIndex() == 1 else "pc"
 
     def _load_layer_into_form(self, index: int) -> None:
         # Antes de cambiar de capa, persistimos lo editado de la anterior.
@@ -221,6 +226,7 @@ class ConfigTab(QWidget):
         if not (0 <= index < len(self.draft["layers"])):
             return
         layer = self.draft["layers"][index]
+        self.target_combo.setCurrentIndex(1 if layer.get("target") == "phone" else 0)
         buttons = layer.get("buttons", [])
         for i, row in enumerate(self.button_rows):
             row.set_action(buttons[i] if i < len(buttons) else {"action": "none"})

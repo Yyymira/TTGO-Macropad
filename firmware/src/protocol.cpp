@@ -26,7 +26,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.4.0";
+    doc["fw"] = "1.5.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -141,7 +141,12 @@ static void handleLine(const String &line) {
             labels[i] = (i < arr.size()) ? arr[i].as<String>() : "";
         }
         String name = doc["name"] | "";
+        displaySetLayerToPhone(doc["bt"] | false);
         displaySetLayer(doc["index"] | 0, name, labels);
+    } else if (strcmp(type, "ble") == 0) {
+        // Capa con destino "celular": la PC decide qué tecla corresponde y la
+        // placa la manda por Bluetooth.
+        bleSendKeys(doc["k"].as<JsonArrayConst>());
     } else if (strcmp(type, "settings") == 0) {
         applySettings(doc);
     } else if (strcmp(type, "keymap") == 0) {

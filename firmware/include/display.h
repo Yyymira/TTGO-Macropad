@@ -14,5 +14,6 @@ void displaySetHostPresent(bool present);
 void displayRefresh();
 void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp, int vram);
 void displaySetLayer(uint8_t index, const String &name, const String labels[NUM_BUTTONS]);
+void displaySetLayerToPhone(bool toPhone);  // la capa activa manda sus teclas al celular (antes de displaySetLayer)
 void displayOtaProgress(int pct);
 void displayOtaEnd(bool ok);

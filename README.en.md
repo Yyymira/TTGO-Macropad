@@ -202,7 +202,10 @@ password and city) and are stored on the board.
   ("TTGO Macropad") with the same layers and keys; the service copies the
   mapping to it every time you save. You pair it once from your phone. Media
   and volume keys work; brightness doesn't exist over Bluetooth. On the layer
-  screen, a light-blue "BT" means a phone is connected.
+  screen, a light-blue "BT" means a phone is connected. With the PC
+  connected, each layer can target the PC or the phone: in a phone layer,
+  keys go out over Bluetooth even while the board is plugged in (see
+  [docs/actions.md](docs/actions.md#layers-for-the-phone)).
 - **OTA (update over WiFi)**: with the board on WiFi, `firmware/ota_upload.sh`
   builds and uploads the firmware with no cable. The OTA password is
   generated automatically and lives in `~/.config/ttgo-macropad/config.json`

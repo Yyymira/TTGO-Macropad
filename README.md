@@ -194,6 +194,9 @@ contraseña y ciudad) y quedan guardados en la placa.
   mapeo cada vez que se guarda. Se empareja una vez desde el celular. Las
   teclas multimedia y de volumen funcionan; el brillo no existe en Bluetooth.
   En la pantalla de capa, "BT" en celeste indica que hay un celular conectado.
+  Con la PC conectada, cada capa puede tener como destino la PC o el
+  celular: en una capa de celular, las teclas salen por Bluetooth aunque la
+  placa esté enchufada (ver [docs/acciones.md](docs/acciones.md#capas-para-el-celular)).
 - **OTA (actualizar por WiFi)**: con la placa en el WiFi, `firmware/ota_upload.sh`
   compila y sube el firmware sin cable. La contraseña OTA se genera sola y vive
   en `~/.config/ttgo-macropad/config.json` (permisos 600, junto con la del WiFi).

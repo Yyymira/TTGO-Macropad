@@ -227,6 +227,25 @@ Examples with Windows shortcuts:
 | Task Manager | `ctrl, shift, esc` |
 | Settings | `win, i` |
 
+## Layers for the phone
+
+Each layer has a destination: **"Keys go to: PC"** (the default) or
+**"Phone (Bluetooth)"**. In a phone layer, with the board plugged into the
+PC, keys and encoders go out through the board's Bluetooth to the phone
+instead of being typed on the PC. So you can have, for example, a "phone
+Spotify" layer and switch to it with "Next layer" without unplugging
+anything.
+
+- Layer switching keeps working the same, so you can go back and forth
+  between PC and phone layers.
+- The keys it understands are the Bluetooth-mode ones (see below).
+- "Run command" in a phone layer still runs the command on the PC: the phone
+  can't run commands.
+- On the screen, a phone layer shows the battery and "BT" (light blue if a
+  phone is connected) at the top right; in the widget's list it shows
+  "· BT".
+- Without the PC, every layer goes to the phone, whatever its destination.
+
 ## Without the PC: Bluetooth mode
 
 When the board works on its own as a Bluetooth keyboard (for your phone), it

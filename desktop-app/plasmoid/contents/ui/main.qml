@@ -274,7 +274,7 @@ PlasmoidItem {
                                 icon.name: root.status.layer_index === lrow.index ? "checkmark" : ""
                                 text: {
                                     const l = root.layerAt(lrow.index, root.rev)
-                                    return lrow.index + ": " + (l ? l.name : "")
+                                    return lrow.index + ": " + (l ? l.name : "") + (l && l.target === "phone" ? "  · BT" : "")
                                 }
                                 onClicked: { root.editLayer = lrow.index; root.rev++ }
                             }
@@ -306,6 +306,20 @@ PlasmoidItem {
                             text: T.tr("Delete")
                             enabled: root.draft !== null && root.draft.layers.length > 1
                             onClicked: root.removeLayer()
+                        }
+                    }
+                    RowLayout {
+                        PC3.Label { text: T.tr("Keys go to"); Layout.fillWidth: true }
+                        PC3.ComboBox {
+                            model: [T.tr("PC"), T.tr("Phone (Bluetooth)")]
+                            currentIndex: { const l = root.layerAt(root.editLayer, root.rev); return l && l.target === "phone" ? 1 : 0 }
+                            onActivated: (i) => {
+                                const l = root.layerAt(root.editLayer)
+                                if (!l) return
+                                l.target = i === 1 ? "phone" : "pc"
+                                root.dirty = true
+                                root.rev++
+                            }
                         }
                     }
 

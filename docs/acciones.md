@@ -227,6 +227,25 @@ Ejemplos con atajos de Windows:
 | Administrador de tareas | `ctrl, shift, esc` |
 | Configuración | `win, i` |
 
+## Capas para el celular
+
+Cada capa tiene un destino: **"Las teclas van a: PC"** (el normal) o
+**"Celular (Bluetooth)"**. En una capa de celular, con la placa enchufada a
+la PC, las teclas y los encoders salen por el Bluetooth de la placa hacia el
+celular en vez de escribirse en la PC. Así podés tener, por ejemplo, una capa
+"Spotify del celular" y pasar a ella con "Capa siguiente" sin desenchufar
+nada.
+
+- Los cambios de capa siguen funcionando igual, así que podés ir y volver
+  entre capas de PC y de celular.
+- Las teclas que entiende son las del modo Bluetooth (ver abajo).
+- "Ejecutar comando" en una capa de celular sigue ejecutando el comando en la
+  PC: el celular no puede ejecutar comandos.
+- En la pantalla, una capa de celular muestra la batería y "BT" (celeste si
+  hay un celular conectado) arriba a la derecha; en la lista del widget
+  aparece con "· BT".
+- Sin la PC, todas las capas van al celular, sea cual sea su destino.
+
 ## Sin la PC: modo Bluetooth
 
 Cuando la placa funciona sola como teclado Bluetooth (para el celular), usa

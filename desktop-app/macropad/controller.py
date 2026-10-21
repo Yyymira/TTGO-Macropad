@@ -35,6 +35,11 @@ def encoder_is_command(mapping: dict) -> bool:
     return mapping.get("type") == "command"
 
 
+def layer_to_phone(layer: dict) -> bool:
+    """Capa con destino "celular": sus teclas salen por el Bluetooth de la placa."""
+    return layer.get("target") == "phone"
+
+
 def _compact_action(action: dict) -> dict:
     kind = action.get("action", "none")
     out = {"a": kind}
@@ -158,7 +163,7 @@ class Controller(QObject):
         action = buttons[button_id]
         kind = action.get("action", "none")
         if kind == "key":
-            self.injector.send_keys(action.get("keys", []))
+            self._send_keys(action.get("keys", []))
         elif kind == "command":
             run_command(action.get("cmd", ""))
         elif kind == "layer_next":
@@ -180,7 +185,15 @@ class Controller(QObject):
             run_command(mapping.get("cw_cmd", "") if delta > 0 else mapping.get("ccw_cmd", ""))
             return
         keys = mapping.get("cw", []) if delta > 0 else mapping.get("ccw", [])
-        self.injector.send_keys(keys)
+        self._send_keys(keys)
+
+    def _send_keys(self, keys: list[str]) -> None:
+        if not keys:
+            return
+        if layer_to_phone(self.current_layer):
+            self.link.send({"type": "ble", "k": keys})
+        else:
+            self.injector.send_keys(keys)
 
     def _enter_layer(self) -> None:
         self.mode = "layer"
@@ -199,7 +212,8 @@ class Controller(QObject):
         layer = self.current_layer
         labels = [action_label(a) for a in layer.get("buttons", [])]
         self.link.send(
-            {"type": "layer", "index": self.layer_index, "name": layer.get("name", ""), "labels": labels}
+            {"type": "layer", "index": self.layer_index, "name": layer.get("name", ""), "labels": labels,
+             "bt": layer_to_phone(layer)}
         )
         self.layer_changed.emit(self.layer_index, layer.get("name", ""))
 

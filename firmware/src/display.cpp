@@ -18,6 +18,7 @@ static String layerName = "";
 static String layerLabels[NUM_BUTTONS];
 
 static bool hostPresent = false;
+static bool layerToPhone = false;  // capa con destino celular (con la PC presente)
 static bool showingWeather = false;
 static uint8_t bothPhase = 0;  // modo "ambos": 0 = stats, 1 = clima
 static uint32_t lastPhaseMs = 0;
@@ -338,7 +339,7 @@ static void renderLayer() {
     tft.setTextFont(2);
     tft.drawString(String(tr(Str::Layer)) + " " + String(layerIndex) + ": " + layerName, 8, 4);
 
-    if (!hostPresent) {  // modo Bluetooth: batería y si hay un celular conectado
+    if (!hostPresent || layerToPhone) {  // teclas al celular: batería y si hay uno conectado
         drawBattery(170, 7);
         tft.setTextDatum(TR_DATUM);
         tft.setTextFont(2);
@@ -440,9 +441,11 @@ void displayLoop() {
     bool ble = bleConnected();
     if (ble != lastBle) {
         lastBle = ble;
-        if (currentMode == DisplayMode::Layer && !hostPresent) render();
+        if (currentMode == DisplayMode::Layer && (!hostPresent || layerToPhone)) render();
     }
 }
+
+void displaySetLayerToPhone(bool toPhone) { layerToPhone = toPhone; }  // se dibuja con displaySetLayer
 
 void displaySetHostPresent(bool present) {
     if (present == hostPresent) return;
