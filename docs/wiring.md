@@ -44,7 +44,7 @@ izquierda a derecha.
 | Placa (GPIO0) | 0 | Integrado. Ojo: si lo mantenés apretado al conectar el USB o resetear, la placa entra en modo de flasheo en vez de arrancar normal. En uso normal funciona como botón cualquiera. |
 | Placa (GPIO35) | 35 | Integrado. |
 | Encoder 1 (atrás) — CLK | 27 | |
-| Encoder 1 (atrás) — DT | 14 | |
+| Encoder 1 (atrás) — DT | 12 | Pin de "strapping": ver nota abajo. |
 | Encoder 2 (adelante) — CLK | 21 | |
 | Encoder 2 (adelante) — DT | 22 | |
 | Encoder 1 (apretar) | 15 | Pulsador del eje del encoder 1: un pin a GPIO15, el otro a GND. |
@@ -60,12 +60,13 @@ externa ni diodos (cada tecla tiene su propio GPIO, no hay matriz). Los
 encoders usan la misma lógica de pull-up interno vía la librería
 `ESP32Encoder`.
 
-Libres para el futuro: GPIO12 (de "strapping", mejor evitarlo) y GPIO36-39
+Libres para el futuro: GPIO36-39
 (sin pull-up interno — si los usás, agregá una resistencia externa de ~10k a 3V3).
 
-**Nota sobre GPIO15 y GPIO2**: son pines de "strapping" (el ESP32 los lee al
-arrancar). Como el pulsador solo los lleva a GND mientras está apretado, en
-el arranque normal no cambian nada. Lo único: no mantengas apretado el
+**Nota sobre GPIO12, GPIO15 y GPIO2**: son pines de "strapping" (el ESP32 los
+lee al arrancar). El encoder y los pulsadores solo los llevan a GND, nunca a
+3V3, y eso no cambia el arranque normal (en GPIO12 lo peligroso sería
+llevarlo a 3V3: por eso va al encoder, que solo conecta a GND). Lo único: no mantengas apretado el
 encoder 1 al resetear (el log de boot sale distinto, nada más) ni el
 encoder 2 mientras flasheás por USB.
 
@@ -87,7 +88,7 @@ encoder 2 mientras flasheás por USB.
    (la otra pata de cada switch, a GND)
 
    Encoder 1:  CLK → GPIO27     Encoder 2:  CLK → GPIO21
-               DT  → GPIO14                 DT  → GPIO22
+               DT  → GPIO12                 DT  → GPIO22
                C   → GND                    C   → GND
                SW  → GPIO15                 SW  → GPIO2
                SW  → GND                    SW  → GND

@@ -21,7 +21,8 @@ struct EncoderPins {
 };
 
 constexpr EncoderPins ENCODER_PINS[NUM_ENCODERS] = {
-    {27, 14},  // Encoder 0
+    {27, 12},  // Encoder 0 (GPIO14 no sale a los pines de la T-Display: la placa lo usa
+               // para habilitar la lectura de batería)
     {21, 22},  // Encoder 1
 };
 

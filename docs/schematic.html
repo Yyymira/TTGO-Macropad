@@ -268,7 +268,7 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <line x1="680" y1="345" x2="800" y2="345" stroke="var(--signal)" stroke-width="3"/>
         <use href="#dot" x="680" y="345" color="var(--signal)"/>
         <use href="#dot" x="800" y="345" color="var(--signal)"/>
-        <text x="740" y="331" text-anchor="middle" font-size="13" font-weight="600">GPIO14</text>
+        <text x="740" y="331" text-anchor="middle" font-size="13" font-weight="600">GPIO12</text>
         <text x="812" y="340" font-size="10.5" fill="var(--muted)">DT</text>
 
         <line x1="940" y1="320" x2="1090" y2="320" stroke="var(--copper)" stroke-width="3"/>
@@ -359,7 +359,7 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <tr class="integrated"><td class="mono">GPIO0</td><td><span class="tag">PLACA 7</span></td><td>GND</td><td>Integrado. No mantener apretado al resetear/conectar USB.</td></tr>
         <tr class="integrated"><td class="mono">GPIO35</td><td><span class="tag">PLACA 8</span></td><td>GND</td><td>Integrado.</td></tr>
         <tr><td class="mono">GPIO27</td><td><span class="tag">ENC 1 · CLK</span></td><td>GND (del encoder)</td><td>Encoder de atrás, señal A.</td></tr>
-        <tr><td class="mono">GPIO14</td><td><span class="tag">ENC 1 · DT</span></td><td>GND (del encoder)</td><td>Encoder de atrás, señal B.</td></tr>
+        <tr><td class="mono">GPIO12</td><td><span class="tag">ENC 1 · DT</span></td><td>GND (del encoder)</td><td>Encoder de atrás, señal B.</td></tr>
         <tr><td class="mono">GPIO21</td><td><span class="tag">ENC 2 · CLK</span></td><td>GND (del encoder)</td><td>Encoder de adelante, señal A.</td></tr>
         <tr><td class="mono">GPIO22</td><td><span class="tag">ENC 2 · DT</span></td><td>GND (del encoder)</td><td>Encoder de adelante, señal B.</td></tr>
         <tr><td class="mono">GPIO15</td><td><span class="tag">ENC 1 · SW</span></td><td>GND</td><td>Pulsador del eje del encoder de atrás (botón 9).</td></tr>
@@ -383,7 +383,7 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <li>Todos los switches van a <strong>GND</strong> usando el pull-up interno del ESP32 — sin resistencias ni diodos (cada tecla tiene su propio GPIO, no hay matriz).</li>
         <li>Los encoders usan la misma lógica de pull-up interno vía <code style="font-family:var(--font-mono)">ESP32Encoder</code>.</li>
         <li>GPIO0 es también el botón de boot: si lo mantenés apretado al conectar el USB, la placa entra en modo flasheo en vez de arrancar normal.</li>
-        <li>GPIO15 y GPIO2 también se leen al arrancar, pero el pulsador solo los lleva a GND mientras está apretado: sueltos no cambian nada. No mantengas apretado el encoder 2 mientras flasheás.</li>
+        <li>GPIO12, GPIO15 y GPIO2 también se leen al arrancar, pero el encoder y los pulsadores solo los llevan a GND: sueltos no cambian nada. No mantengas apretado el encoder 2 mientras flasheás.</li>
       </ul>
     </div>
   </div>
