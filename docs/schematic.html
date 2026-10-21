@@ -118,15 +118,15 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
 <main>
   <h1>Esquemático — TTGO Macropad</h1>
   <p class="subtitle">
-    Qué va a cada <strong>GPIO</strong> del TTGO T-Display para los 8 botones
-    (6 Cherry MX + los 2 integrados de la placa) y los 2 encoders. Todo se
+    Qué va a cada <strong>GPIO</strong> del TTGO T-Display para los 10 botones
+    (6 Cherry MX, los 2 integrados de la placa y el pulsador de cada encoder) y el giro de los 2 encoders. Todo se
     suelda directo a los pines de los switches, contra el mismo bus de <strong>GND</strong>.
   </p>
 
   <figure>
     <div class="diagram-frame">
       <svg viewBox="0 0 1200 780" role="img"
-           aria-label="Esquemático de conexión: TTGO T-Display al centro, 8 botones a la izquierda contra un bus de GND, 2 encoders rotativos a la derecha contra otro bus de GND.">
+           aria-label="Esquemático de conexión: TTGO T-Display al centro, 8 botones a la izquierda contra un bus de GND, 2 encoders rotativos con pulsador a la derecha contra otro bus de GND.">
         <defs>
           <g id="sw" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
             <line x1="-30" y1="0" x2="-12" y2="0"/>
@@ -253,52 +253,81 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <text x="885" y="178" text-anchor="middle" font-size="13" font-weight="600" fill="var(--copper)">GND</text>
 
         <!-- ENC0 -->
-        <rect x="800" y="260" width="140" height="170" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
-        <text x="870" y="282" text-anchor="middle" font-size="15" font-weight="600">ENC 1 (atrás)</text>
-        <text x="870" y="298" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
-        <circle cx="870" cy="360" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
-        <line x1="870" y1="360" x2="884" y2="347" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+        <rect x="800" y="225" width="140" height="220" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="870" y="247" text-anchor="middle" font-size="15" font-weight="600">ENC 1 (atrás)</text>
+        <text x="870" y="263" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
+        <circle cx="870" cy="320" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="870" y1="320" x2="884" y2="307" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
 
-        <line x1="680" y1="320" x2="800" y2="320" stroke="var(--signal)" stroke-width="3"/>
-        <use href="#dot" x="680" y="320" color="var(--signal)"/>
-        <use href="#dot" x="800" y="320" color="var(--signal)"/>
-        <text x="740" y="306" text-anchor="middle" font-size="13" font-weight="600">GPIO27</text>
-        <text x="812" y="315" font-size="10.5" fill="var(--muted)">CLK</text>
+        <line x1="680" y1="290" x2="800" y2="290" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="290" color="var(--signal)"/>
+        <use href="#dot" x="800" y="290" color="var(--signal)"/>
+        <text x="740" y="276" text-anchor="middle" font-size="13" font-weight="600">GPIO27</text>
+        <text x="812" y="285" font-size="10.5" fill="var(--muted)">CLK</text>
 
+        <line x1="680" y1="345" x2="800" y2="345" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="345" color="var(--signal)"/>
+        <use href="#dot" x="800" y="345" color="var(--signal)"/>
+        <text x="740" y="331" text-anchor="middle" font-size="13" font-weight="600">GPIO14</text>
+        <text x="812" y="340" font-size="10.5" fill="var(--muted)">DT</text>
+
+        <line x1="940" y1="320" x2="1090" y2="320" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="320" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="320" color="var(--copper)"/>
+        <text x="952" y="313" font-size="10.5" fill="var(--copper)">C</text>
+
+        <!-- pulsador del eje -->
         <line x1="680" y1="400" x2="800" y2="400" stroke="var(--signal)" stroke-width="3"/>
         <use href="#dot" x="680" y="400" color="var(--signal)"/>
         <use href="#dot" x="800" y="400" color="var(--signal)"/>
-        <text x="740" y="386" text-anchor="middle" font-size="13" font-weight="600">GPIO14</text>
-        <text x="812" y="395" font-size="10.5" fill="var(--muted)">DT</text>
-
-        <line x1="940" y1="360" x2="1090" y2="360" stroke="var(--copper)" stroke-width="3"/>
-        <use href="#dot" x="940" y="360" color="var(--copper)"/>
-        <use href="#dot" x="1090" y="360" color="var(--copper)"/>
-        <text x="952" y="353" font-size="10.5" fill="var(--copper)">GND</text>
+        <text x="740" y="386" text-anchor="middle" font-size="13" font-weight="600">GPIO15</text>
+                <line x1="800" y1="400" x2="840" y2="400" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="870" y="400" color="var(--ink)"/>
+        <text x="870" y="420" text-anchor="middle" font-size="10.5" fill="var(--muted)">SW (apretar)</text>
+        <line x1="900" y1="400" x2="940" y2="400" stroke="var(--copper)" stroke-width="3"/>
+        <line x1="940" y1="400" x2="1090" y2="400" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="400" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="400" color="var(--copper)"/>
+        <text x="952" y="393" font-size="10.5" fill="var(--copper)">GND</text>
 
         <!-- ENC1 -->
-        <rect x="800" y="470" width="140" height="170" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
-        <text x="870" y="492" text-anchor="middle" font-size="15" font-weight="600">ENC 2 (adelante)</text>
-        <text x="870" y="508" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
-        <circle cx="870" cy="570" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
-        <line x1="870" y1="570" x2="884" y2="557" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+        <rect x="800" y="460" width="140" height="220" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="870" y="482" text-anchor="middle" font-size="15" font-weight="600">ENC 2 (adelante)</text>
+        <text x="870" y="498" text-anchor="middle" font-size="11" fill="var(--muted)">EC11</text>
+        <circle cx="870" cy="555" r="18" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="870" y1="555" x2="884" y2="542" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
 
-        <line x1="680" y1="530" x2="800" y2="530" stroke="var(--signal)" stroke-width="3"/>
-        <use href="#dot" x="680" y="530" color="var(--signal)"/>
-        <use href="#dot" x="800" y="530" color="var(--signal)"/>
-        <text x="740" y="516" text-anchor="middle" font-size="13" font-weight="600">GPIO21</text>
-        <text x="812" y="525" font-size="10.5" fill="var(--muted)">CLK</text>
+        <line x1="680" y1="525" x2="800" y2="525" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="525" color="var(--signal)"/>
+        <use href="#dot" x="800" y="525" color="var(--signal)"/>
+        <text x="740" y="511" text-anchor="middle" font-size="13" font-weight="600">GPIO21</text>
+        <text x="812" y="520" font-size="10.5" fill="var(--muted)">CLK</text>
 
-        <line x1="680" y1="610" x2="800" y2="610" stroke="var(--signal)" stroke-width="3"/>
-        <use href="#dot" x="680" y="610" color="var(--signal)"/>
-        <use href="#dot" x="800" y="610" color="var(--signal)"/>
-        <text x="740" y="596" text-anchor="middle" font-size="13" font-weight="600">GPIO22</text>
-        <text x="812" y="605" font-size="10.5" fill="var(--muted)">DT</text>
+        <line x1="680" y1="580" x2="800" y2="580" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="580" color="var(--signal)"/>
+        <use href="#dot" x="800" y="580" color="var(--signal)"/>
+        <text x="740" y="566" text-anchor="middle" font-size="13" font-weight="600">GPIO22</text>
+        <text x="812" y="575" font-size="10.5" fill="var(--muted)">DT</text>
 
-        <line x1="940" y1="570" x2="1090" y2="570" stroke="var(--copper)" stroke-width="3"/>
-        <use href="#dot" x="940" y="570" color="var(--copper)"/>
-        <use href="#dot" x="1090" y="570" color="var(--copper)"/>
-        <text x="952" y="563" font-size="10.5" fill="var(--copper)">GND</text>
+        <line x1="940" y1="555" x2="1090" y2="555" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="555" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="555" color="var(--copper)"/>
+        <text x="952" y="548" font-size="10.5" fill="var(--copper)">C</text>
+
+        <!-- pulsador del eje -->
+        <line x1="680" y1="635" x2="800" y2="635" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#dot" x="680" y="635" color="var(--signal)"/>
+        <use href="#dot" x="800" y="635" color="var(--signal)"/>
+        <text x="740" y="621" text-anchor="middle" font-size="13" font-weight="600">GPIO2</text>
+                <line x1="800" y1="635" x2="840" y2="635" stroke="var(--signal)" stroke-width="3"/>
+        <use href="#sw" x="870" y="635" color="var(--ink)"/>
+        <text x="870" y="655" text-anchor="middle" font-size="10.5" fill="var(--muted)">SW (apretar)</text>
+        <line x1="900" y1="635" x2="940" y2="635" stroke="var(--copper)" stroke-width="3"/>
+        <line x1="940" y1="635" x2="1090" y2="635" stroke="var(--copper)" stroke-width="3"/>
+        <use href="#dot" x="940" y="635" color="var(--copper)"/>
+        <use href="#dot" x="1090" y="635" color="var(--copper)"/>
+        <text x="952" y="628" font-size="10.5" fill="var(--copper)">GND</text>
+
       </svg>
     </div>
     <figcaption>
@@ -333,6 +362,8 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <tr><td class="mono">GPIO14</td><td><span class="tag">ENC 1 · DT</span></td><td>GND (del encoder)</td><td>Encoder de atrás, señal B.</td></tr>
         <tr><td class="mono">GPIO21</td><td><span class="tag">ENC 2 · CLK</span></td><td>GND (del encoder)</td><td>Encoder de adelante, señal A.</td></tr>
         <tr><td class="mono">GPIO22</td><td><span class="tag">ENC 2 · DT</span></td><td>GND (del encoder)</td><td>Encoder de adelante, señal B.</td></tr>
+        <tr><td class="mono">GPIO15</td><td><span class="tag">ENC 1 · SW</span></td><td>GND</td><td>Pulsador del eje del encoder de atrás (botón 9).</td></tr>
+        <tr><td class="mono">GPIO2</td><td><span class="tag">ENC 2 · SW</span></td><td>GND</td><td>Pulsador del eje del encoder de adelante (botón 10).</td></tr>
       </tbody>
     </table>
   </div>
@@ -342,7 +373,7 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
       <h2>Lista de compras</h2>
       <ul class="parts">
         <li>6× switch Cherry MX (Brown), montaje en placa, encastrados en la tapa del gabinete.</li>
-        <li>2× encoder rotativo EC11 (solo se usan CLK/DT; el push-button del eje queda sin cablear por ahora).</li>
+        <li>2× encoder rotativo EC11 con pulsador (3 pines del giro: A – C – B, con C a GND; 2 pines del pulsador).</li>
         <li>Cable fino para soldar directo a los pines (sin PCB).</li>
       </ul>
     </div>
@@ -352,6 +383,7 @@ footer code { font-family: var(--font-mono); background: color-mix(in srgb, var(
         <li>Todos los switches van a <strong>GND</strong> usando el pull-up interno del ESP32 — sin resistencias ni diodos (cada tecla tiene su propio GPIO, no hay matriz).</li>
         <li>Los encoders usan la misma lógica de pull-up interno vía <code style="font-family:var(--font-mono)">ESP32Encoder</code>.</li>
         <li>GPIO0 es también el botón de boot: si lo mantenés apretado al conectar el USB, la placa entra en modo flasheo en vez de arrancar normal.</li>
+        <li>GPIO15 y GPIO2 también se leen al arrancar, pero el pulsador solo los lleva a GND mientras está apretado: sueltos no cambian nada. No mantengas apretado el encoder 2 mientras flasheás.</li>
       </ul>
     </div>
   </div>

@@ -4,13 +4,16 @@
 
 // --- Pines: ver docs/wiring.md para el detalle y el por qué de cada elección ---
 
-constexpr uint8_t NUM_BUTTONS = 8;
+constexpr uint8_t NUM_BUTTONS = 10;
 constexpr uint8_t NUM_ENCODERS = 2;
 
 // Botones 0-5: Cherry MX en grilla 3x2 (fila de atrás 0-1-2, de adelante
 // 3-4-5), cada uno entre su GPIO y GND con INPUT_PULLUP.
 // Botones 6 y 7: los integrados en la placa (GPIO0 / GPIO35).
-constexpr int8_t BUTTON_PINS[NUM_BUTTONS] = {32, 33, 25, 26, 13, 17, 0, 35};
+// Botones 8 y 9: el pulsador del eje de los encoders 1 y 2 (GPIO15 / GPIO2).
+// Son pines de "strapping", pero el pulsador solo los lleva a GND al
+// apretarlo, así que sueltos no cambian el arranque.
+constexpr int8_t BUTTON_PINS[NUM_BUTTONS] = {32, 33, 25, 26, 13, 17, 0, 35, 15, 2};
 
 struct EncoderPins {
     int8_t clk;

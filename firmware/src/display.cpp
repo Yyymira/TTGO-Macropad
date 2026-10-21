@@ -279,6 +279,13 @@ static bool idleShowsWeather() {
     }
 }
 
+// Etiqueta centrada en su celda; si no entra con la fuente normal, usa la chica.
+static void drawCell(const String &label, int x, int y, int w, int h) {
+    tft.drawRect(x, y, w, h, TFT_DARKGREY);
+    tft.setTextFont(tft.textWidth(label, 2) <= w - 4 ? 2 : 1);
+    tft.drawString(label, x + w / 2, y + h / 2);
+}
+
 static void renderLayer() {
     showingWeather = false;
     tft.fillScreen(TFT_BLACK);
@@ -293,28 +300,29 @@ static void renderLayer() {
         tft.drawString(bleConnected() ? "BT" : "BT --", 234, 4);
     }
 
-    // Grilla 3x2 para los Cherry MX (misma disposición que en el gabinete) y
-    // una columna angosta a la derecha para los 2 botones integrados, que en
-    // el gabinete quedan a la derecha del display.
+    // Grilla 3x2 para los Cherry MX (misma disposición que en el gabinete),
+    // una columna angosta a la derecha para los 2 botones integrados y, solo
+    // si la capa les asigna algo, otra a la izquierda para los pulsadores de
+    // los encoders (en el gabinete, los encoders quedan a la izquierda).
     const int top = 24;
     const int sideW = 54;
-    const int cols = 3, rows = 2;
-    const int cellW = (240 - sideW) / cols, cellH = (135 - top) / rows;
+    const bool encCol = layerLabels[8].length() > 0 || layerLabels[9].length() > 0;
+    const int encW = encCol ? 44 : 0;
+    const int cols = 3;
+    const int cellW = (240 - sideW - encW) / cols, cellH = (135 - top) / 2;
+    const int sideX = encW + cols * cellW;
 
     tft.setTextDatum(MC_DATUM);
-    tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     for (uint8_t i = 0; i < 6; i++) {
-        int x = (i % cols) * cellW, y = top + (i / cols) * cellH;
-        tft.drawRect(x, y, cellW, cellH, TFT_DARKGREY);
-        tft.drawString(layerLabels[i], x + cellW / 2, y + cellH / 2);
+        int x = encW + (i % cols) * cellW, y = top + (i / cols) * cellH;
+        drawCell(layerLabels[i], x, y, cellW, cellH);
     }
 
     tft.setTextColor(TFT_SILVER, TFT_BLACK);
-    for (uint8_t i = 6; i < NUM_BUTTONS; i++) {
-        int x = cols * cellW, y = top + (i - 6) * cellH;
-        tft.drawRect(x, y, 240 - x, cellH, TFT_DARKGREY);
-        tft.drawString(layerLabels[i], x + (240 - x) / 2, y + cellH / 2);
+    for (uint8_t i = 6; i < 8; i++) drawCell(layerLabels[i], sideX, top + (i - 6) * cellH, 240 - sideX, cellH);
+    if (encCol) {
+        for (uint8_t i = 8; i < 10; i++) drawCell(layerLabels[i], 0, top + (i - 8) * cellH, encW, cellH);
     }
     tft.setTextDatum(TL_DATUM);
 }

@@ -15,7 +15,13 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
 
-Los encoders siempre mandan teclas: una lista para el giro horario y otra para el
+Son 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
+cada encoder (apretar la perilla: "Encoder 1 (apretar)" y "Encoder 2
+(apretar)"). Los 10 se configuran igual y vienen sin nada asignado los del
+encoder. En la pantalla, los pulsadores de los encoders aparecen en una
+columna a la izquierda solo en las capas donde tienen algo asignado.
+
+El giro de los encoders siempre manda teclas: una lista para el giro horario y otra para el
 antihorario. Cada "click" del encoder aprieta esa combinación una vez.
 
 ## Cómo escribir una tecla o un atajo

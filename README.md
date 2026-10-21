@@ -2,7 +2,7 @@
 
 Mini teclado de macros con 6 teclas Cherry MX + 2 encoders rotativos sobre una placa
 **TTGO T-Display** (ESP32 + pantalla ST7789 1.14") — más los 2 botones
-integrados de la placa, 8 botones asignables en total —, programable desde una app
+integrados de la placa y el pulsador de cada encoder, 10 botones asignables en total —, programable desde una app
 de escritorio en Python (Linux/Wayland/KDE).
 
 - En reposo, la pantalla muestra gauges tipo velocímetro para CPU% y GPU%
@@ -127,7 +127,7 @@ La ventana tiene dos pestañas:
 - **Estado**: conexión con la placa, modo actual (idle/capa) y un log de
   eventos crudos (útil para debug).
 - **Configuración**: editor de capas — por cada capa se define la acción de
-  los 8 botones (6 teclas + 2 integrados) y de los 2 encoders, y el timeout de inactividad. "Guardar y
+  los 10 botones (6 teclas, 2 integrados y el pulsador de los 2 encoders) y de los 2 encoders, y el timeout de inactividad. "Guardar y
   aplicar" persiste en `~/.config/ttgo-macropad/config.json` y lo usa al
   toque, sin reiniciar la app ni la placa.
 

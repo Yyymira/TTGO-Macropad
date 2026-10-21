@@ -131,7 +131,8 @@ class ConfigTab(QWidget):
         left.addWidget(self.layer_list)
         left.addLayout(layer_buttons)
 
-        names = [f"Tecla {i + 1}" for i in range(6)] + ["Placa (GPIO0)", "Placa (GPIO35)"]
+        names = [f"Tecla {i + 1}" for i in range(6)] + ["Placa (GPIO0)", "Placa (GPIO35)",
+                                                         "Encoder 1 (apretar)", "Encoder 2 (apretar)"]
         self.button_rows = [ButtonRow(name) for name in names[:NUM_BUTTONS]]
         buttons_box = QGroupBox("Botones de la capa seleccionada")
         buttons_layout = QVBoxLayout()

@@ -9,7 +9,7 @@ from pathlib import Path
 
 CONFIG_PATH = Path.home() / ".config" / "ttgo-macropad" / "config.json"
 
-NUM_BUTTONS = 8  # 0-5: Cherry MX (grilla 3x2), 6-7: botones integrados de la placa
+NUM_BUTTONS = 10  # 0-5: Cherry MX (grilla 3x2), 6-7: integrados de la placa, 8-9: pulsador de los encoders
 NUM_ENCODERS = 2
 
 DEFAULT_CONFIG = {
@@ -26,6 +26,8 @@ DEFAULT_CONFIG = {
                 {"action": "none"},
                 {"action": "layer_prev"},
                 {"action": "layer_next"},
+                {"action": "none"},
+                {"action": "none"},
             ],
             "encoders": [
                 {"cw": ["volumeup"], "ccw": ["volumedown"]},
@@ -43,6 +45,8 @@ DEFAULT_CONFIG = {
                 {"action": "key", "keys": ["f5"]},
                 {"action": "layer_prev"},
                 {"action": "layer_next"},
+                {"action": "none"},
+                {"action": "none"},
             ],
             "encoders": [
                 {"cw": ["volumeup"], "ccw": ["volumedown"]},

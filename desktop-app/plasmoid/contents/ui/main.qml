@@ -17,7 +17,8 @@ PlasmoidItem {
     readonly property var actionKinds: ["none", "key", "layer_next", "layer_prev", "layer_set"]
     readonly property var actionNames: ["Ninguna", "Tecla / atajo", "Capa siguiente", "Capa anterior", "Ir a capa…"]
     readonly property var buttonNames: ["Tecla 1", "Tecla 2", "Tecla 3", "Tecla 4", "Tecla 5", "Tecla 6",
-                                        "Placa (GPIO0)", "Placa (GPIO35)"]
+                                        "Placa (GPIO0)", "Placa (GPIO35)",
+                                        "Encoder 1 (apretar)", "Encoder 2 (apretar)"]
     readonly property var encoderNames: ["Encoder 1 (atrás)", "Encoder 2 (adelante)"]
     readonly property var idleViews: ["stats", "weather", "both"]
     readonly property var idleViewNames: ["Solo stats", "Solo reloj y clima", "Ambos (alternando)"]
