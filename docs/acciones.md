@@ -16,8 +16,9 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
 
-Son 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
-cada encoder (apretar la perilla: "Encoder 1 (apretar)" y "Encoder 2
+Son hasta 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
+cada encoder (solo si tus encoders tienen pulsador; si son de 3 pines, dejá
+esos dos en "Ninguna") (apretar la perilla: "Encoder 1 (apretar)" y "Encoder 2
 (apretar)"). Se configuran todos igual; los de los encoders vienen sin nada
 asignado. En la pantalla, los pulsadores de los encoders aparecen en una
 columna a la izquierda solo en las capas donde tienen algo asignado.

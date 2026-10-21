@@ -2,7 +2,7 @@
 
 Mini teclado de macros con 6 teclas Cherry MX + 2 encoders rotativos sobre una placa
 **TTGO T-Display** (ESP32 + pantalla ST7789 1.14") — más los 2 botones
-integrados de la placa y el pulsador de cada encoder, 10 botones asignables en total —, programable desde una app
+integrados de la placa y el pulsador de cada encoder (si tus encoders lo traen), hasta 10 botones asignables —, programable desde una app
 de escritorio en Python (Linux/Wayland/KDE).
 
 - En reposo, la pantalla muestra gauges tipo velocímetro para CPU% y GPU%
@@ -16,6 +16,14 @@ de escritorio en Python (Linux/Wayland/KDE).
 - Los encoders inyectan teclas reales (volumen, brillo, o lo que el usuario
   quiera) vía un teclado virtual a nivel kernel (`evdev`/`uinput`), sin
   necesitar X11 ni ydotool.
+
+> **¿Tu encoder no tiene pulsador?** El EC11 se vende con pulsador (5 pines:
+> 3 de un lado y 2 del otro) y sin pulsador (solo 3 pines); los clones baratos
+> también vienen de las dos formas. Sin pulsador funciona todo igual: el giro
+> anda normal y los botones 9 y 10 ("Encoder 1/2 (apretar)") simplemente no
+> existen — dejalos en "Ninguna" y no cables GPIO15 ni GPIO2. Sin nada
+> conectado esos pines quedan en reposo (pull-up interno), así que no generan
+> pulsaciones fantasma.
 
 Ver [docs/schematic.html](docs/schematic.html) (esquemático visual) o
 [docs/wiring.md](docs/wiring.md) para el pinout y la lista de compras —
@@ -127,7 +135,7 @@ La ventana tiene dos pestañas:
 - **Estado**: conexión con la placa, modo actual (idle/capa) y un log de
   eventos crudos (útil para debug).
 - **Configuración**: editor de capas — por cada capa se define la acción de
-  los 10 botones (6 teclas, 2 integrados y el pulsador de los 2 encoders) y de los 2 encoders, y el timeout de inactividad. "Guardar y
+  los 10 botones (6 teclas, 2 integrados y el pulsador de los 2 encoders, si los tienen) y de los 2 encoders, y el timeout de inactividad. "Guardar y
   aplicar" persiste en `~/.config/ttgo-macropad/config.json` y lo usa al
   toque, sin reiniciar la app ni la placa.
 

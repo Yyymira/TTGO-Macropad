@@ -7,9 +7,9 @@ nativo (puente serie CH9102), display ST7789 1.14" 240x135.
 
 - 6x switch Cherry MX (Brown), montaje en placa — van encastrados en la tapa del
   [gabinete](../gabinete/README.md), con los cables soldados directo a los pines.
-- 2x encoder rotativo EC11 **con pulsador** (los 3 pines del giro + los 2 del
-  pulsador del eje). Si el tuyo no trae pulsador, los botones 9 y 10
-  simplemente no se usan.
+- 2x encoder rotativo EC11, **mejor con pulsador** (5 pines: los 3 del giro +
+  los 2 del pulsador del eje). Sin pulsador (3 pines) también sirve: ver la
+  nota de abajo.
 - Cable fino para soldar (tipo wire-wrap o de cinta plana).
 - Los 2 botones integrados de la placa se usan como botones 7 y 8 (vía los
   pulsadores impresos del gabinete), no hace falta comprar nada para eso.
@@ -49,6 +49,14 @@ izquierda a derecha.
 | Encoder 2 (adelante) — DT | 22 | |
 | Encoder 1 (apretar) | 15 | Pulsador del eje del encoder 1: un pin a GPIO15, el otro a GND. |
 | Encoder 2 (apretar) | 2 | Pulsador del eje del encoder 2: un pin a GPIO2, el otro a GND. |
+
+> **¿Tu encoder no tiene pulsador?** El EC11 se vende con pulsador (5 pines:
+> 3 de un lado y 2 del otro) y sin pulsador (solo 3 pines); los clones baratos
+> también vienen de las dos formas. Sin pulsador funciona todo igual: el giro
+> anda normal y los botones 9 y 10 ("Encoder 1/2 (apretar)") simplemente no
+> existen — dejalos en "Ninguna" y no cables GPIO15 ni GPIO2. Sin nada
+> conectado esos pines quedan en reposo (pull-up interno), así que no generan
+> pulsaciones fantasma.
 
 El EC11 tiene 3 pines de un lado (A – C – B: giro, C es el común a GND) y 2
 del otro (el pulsador, sin polaridad). Las 2 patas grandes de metal son solo
