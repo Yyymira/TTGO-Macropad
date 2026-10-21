@@ -40,7 +40,7 @@ El gabinete imprimible en 3D (OpenSCAD paramétrico + STL listos) está en
 | Reloj y clima | Stats de la PC |
 |---|---|
 | ![Reloj y clima](docs/fotos/macropad-reloj-clima.jpg) | ![Stats de la PC](docs/fotos/macropad-stats.jpg) |
-| **Por dentro** (gabinete impreso en PETG transparente, con la batería LiPo) | **Pantalla de reloj y clima** |
+| **Por dentro** (gabinete impreso en filamento transparente, con la batería LiPo) | **Pantalla de reloj y clima** |
 | ![Vista de abajo](docs/fotos/macropad-abajo.jpg) | ![Pantalla de clima](docs/fotos/pantalla-clima.jpg) |
 
 ## Arquitectura
