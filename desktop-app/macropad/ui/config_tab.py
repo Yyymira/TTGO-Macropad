@@ -175,6 +175,9 @@ class ConfigTab(QWidget):
 
         global_form = QFormLayout()
         global_form.addRow(tr("Keys go to:"), self.target_combo)
+        self.apps_edit = QLineEdit()
+        self.apps_edit.setPlaceholderText(tr("e.g. firefox.exe, spotify.exe"))
+        global_form.addRow(tr("Switch to this layer with programs:"), self.apps_edit)
         global_form.addRow(tr("Idle timeout (back to stats):"), self.idle_spin)
 
         save_btn = QPushButton(tr("Save and apply"))
@@ -215,6 +218,7 @@ class ConfigTab(QWidget):
         layer["buttons"] = [row.get_action() for row in self.button_rows]
         layer["encoders"] = [row.get_mapping() for row in self.encoder_rows]
         layer["target"] = "phone" if self.target_combo.currentIndex() == 1 else "pc"
+        layer["apps"] = [a.strip() for a in self.apps_edit.text().split(",") if a.strip()]
 
     def _load_layer_into_form(self, index: int) -> None:
         # Antes de cambiar de capa, persistimos lo editado de la anterior.
@@ -227,6 +231,7 @@ class ConfigTab(QWidget):
             return
         layer = self.draft["layers"][index]
         self.target_combo.setCurrentIndex(1 if layer.get("target") == "phone" else 0)
+        self.apps_edit.setText(", ".join(layer.get("apps", [])))
         buttons = layer.get("buttons", [])
         for i, row in enumerate(self.button_rows):
             row.set_action(buttons[i] if i < len(buttons) else {"action": "none"})

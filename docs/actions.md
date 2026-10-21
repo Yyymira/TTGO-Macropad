@@ -227,6 +227,29 @@ Examples with Windows shortcuts:
 | Task Manager | `ctrl, shift, esc` |
 | Settings | `win, i` |
 
+## Per-program layers
+
+Each layer can switch on by itself when a program comes to the foreground. In
+the widget, under the layer's destination, there's **"Switch to this layer
+automatically with"**: type the names separated by commas (`firefox,
+org.kde.dolphin`), or press the **+** button next to it, which adds the
+program that was in the foreground before you opened the widget.
+
+- When you enter the program, the board shows the new layer for a few
+  seconds.
+- When you leave to a program without its own layer (or to the desktop), it
+  goes back to the layer you had before.
+- If you change layers by hand while in the program, that's respected: when
+  you leave, you stay on the one you picked.
+- Case doesn't matter. Both the long name (`org.kde.dolphin`) and the short
+  one (`dolphin`) work.
+
+On KDE this works through a small KWin script installed by
+`linux/install.sh` ("TTGO Macropad: active window", in **System Settings →
+Window Management → KWin Scripts**): on Wayland, only KWin knows which window
+is active. On Windows it uses the executable name (`firefox.exe`,
+`spotify.exe`) and is set up in the Settings tab.
+
 ## Layers for the phone
 
 Each layer has a destination: **"Keys go to: PC"** (the default) or

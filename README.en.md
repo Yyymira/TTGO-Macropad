@@ -17,7 +17,9 @@ Python (Linux/Wayland/KDE, plus Windows).
   with the 6 keys, plus a column for the 2 built-in buttons). After a few
   seconds of inactivity (configurable) it goes back to the stats screen.
 - Any button in a layer can be "next / previous layer / go to layer N", so you
-  can have several sets of shortcuts.
+  can have several sets of shortcuts. Layers can also switch on by themselves
+  depending on the program in the foreground (see
+  [per-program layers](docs/actions.md#per-program-layers)).
 - Keys are real keystrokes (volume, brightness, shortcuts, anything) sent
   through a kernel-level virtual keyboard (`evdev`/`uinput`), with no need
   for X11 or ydotool. Buttons can also run commands or scripts.

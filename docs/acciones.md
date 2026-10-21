@@ -227,6 +227,28 @@ Ejemplos con atajos de Windows:
 | Administrador de tareas | `ctrl, shift, esc` |
 | Configuración | `win, i` |
 
+## Capas por programa
+
+Cada capa puede activarse sola cuando un programa pasa a primer plano. En el
+widget, debajo del destino de la capa, está **"Pasar a esta capa sola con
+estos programas"**: escribí los nombres separados por coma (`firefox,
+org.kde.dolphin`), o tocá el botón **+** que aparece al lado, que agrega el
+programa que tenías en primer plano antes de abrir el widget.
+
+- Al entrar al programa, la placa muestra la capa nueva unos segundos.
+- Al salir a un programa sin capa propia (o al escritorio), vuelve a la capa
+  que tenías antes.
+- Si mientras estás en el programa cambiás de capa a mano, se respeta: al
+  salir te quedás en la que elegiste.
+- No importan mayúsculas. Sirve tanto el nombre largo (`org.kde.dolphin`)
+  como el corto (`dolphin`).
+
+En KDE esto funciona con un script chico de KWin que instala
+`linux/install.sh` ("TTGO Macropad: ventana activa", en **Configuración del
+sistema → Ventanas → Scripts de KWin**): en Wayland, solo KWin sabe qué
+ventana está activa. En Windows se usa el nombre del ejecutable
+(`firefox.exe`, `spotify.exe`) y se configura en la pestaña Configuración.
+
 ## Capas para el celular
 
 Cada capa tiene un destino: **"Las teclas van a: PC"** (el normal) o

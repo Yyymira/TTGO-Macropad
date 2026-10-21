@@ -322,6 +322,37 @@ PlasmoidItem {
                             }
                         }
                     }
+                    // Capas por programa: se activan solas con estos programas en primer plano.
+                    PC3.Label { text: T.tr("Switch to this layer automatically with:") }
+                    RowLayout {
+                        PC3.TextField {
+                            id: appsField
+                            Layout.fillWidth: true
+                            placeholderText: T.tr("e.g. firefox, org.kde.dolphin")
+                            text: { const l = root.layerAt(root.editLayer, root.rev); return l && l.apps ? l.apps.join(", ") : "" }
+                            onTextEdited: {
+                                const l = root.layerAt(root.editLayer)
+                                if (l) { l.apps = root.textToKeys(text); root.dirty = true }
+                            }
+                        }
+                        PC3.ToolButton {
+                            readonly property string app: root.status.active_app || ""
+                            visible: app.length > 0
+                            icon.name: "list-add"
+                            text: app
+                            PC3.ToolTip.text: T.tr("Add the program that was in the foreground")
+                            PC3.ToolTip.visible: hovered
+                            onClicked: {
+                                const l = root.layerAt(root.editLayer)
+                                if (!l) return
+                                const apps = l.apps || []
+                                if (apps.indexOf(app) < 0) apps.push(app)
+                                l.apps = apps
+                                root.dirty = true
+                                root.rev++
+                            }
+                        }
+                    }
 
                     // Botones
                     Kirigami.Heading { level: 5; text: T.tr("Buttons"); Layout.topMargin: Kirigami.Units.largeSpacing }

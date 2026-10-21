@@ -26,6 +26,7 @@ from PySide6.QtCore import QCoreApplication, QObject, QTimer, Signal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from macropad.active_window import start_active_window_watcher  # noqa: E402
 from macropad.config import DEFAULT_DEVICE  # noqa: E402
 from macropad.controller import Controller  # noqa: E402
 from macropad.geocode import CityNotFound, geocode  # noqa: E402
@@ -132,6 +133,7 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                     "layers": [l.get("name", "") for l in controller.config["layers"]],
                     "stats": controller.last_stats,
                     "device_net": controller.device_net if link.connected else {},
+                    "active_app": controller.active_app,
                 })
             elif self.path == "/config":
                 self._send(200, controller.config)
@@ -172,6 +174,7 @@ def main() -> None:
     bridge = Bridge()
     bridge.config_requested.connect(controller.reload_config)
     bridge.layer_requested.connect(controller.select_layer)
+    window_watcher = start_active_window_watcher(controller)  # noqa: F841 (hay que mantenerlo vivo)
 
     token = write_token()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), make_handler(token, link, controller, bridge))

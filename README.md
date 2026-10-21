@@ -16,7 +16,9 @@ de escritorio en Python (Linux/Wayland/KDE).
   6 teclas, más una columna con los 2 botones integrados). Tras unos segundos de inactividad (configurable), vuelve sola
   a la pantalla de stats.
 - Un botón de cada capa puede estar mapeado a "capa siguiente/anterior/ir a
-  capa N", permitiendo tener varios set de atajos.
+  capa N", permitiendo tener varios set de atajos. Las capas también pueden
+  activarse solas según el programa en primer plano (ver
+  [capas por programa](docs/acciones.md#capas-por-programa)).
 - Los encoders inyectan teclas reales (volumen, brillo, o lo que el usuario
   quiera) vía un teclado virtual a nivel kernel (`evdev`/`uinput`), sin
   necesitar X11 ni ydotool. Los botones también pueden ejecutar comandos o

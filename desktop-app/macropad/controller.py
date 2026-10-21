@@ -102,6 +102,13 @@ class Controller(QObject):
         self.device_net: dict = {}  # WiFi/IP/Bluetooth/clima, reportado por la placa
         self._activity_ticks_left = 0  # en unidades de STATS_PUSH_INTERVAL_MS
 
+        # Capas por programa: la ventana activa puede elegir la capa sola.
+        self.active_app = ""  # programa en primer plano (lo muestra el widget)
+        self._active_ids: list[str] = []
+        self._app_match = -1  # capa que corresponde a la ventana actual (-1 = ninguna)
+        self._auto_layer = False  # la capa activa la eligió la ventana, no el usuario
+        self._manual_layer = 0  # a la que se vuelve al salir del programa
+
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
         self.timer.timeout.connect(self._tick)
@@ -121,9 +128,60 @@ class Controller(QObject):
         self.config = new_config
         save_config(self.config)
         self.layer_index = min(self.layer_index, len(self.config["layers"]) - 1)
+        self._manual_layer = min(self._manual_layer, len(self.config["layers"]) - 1)
         self._sync_device()
         if self.mode == "layer":
             self._send_layer_snapshot()
+        self._app_match = -1  # pudieron cambiar los programas de cada capa
+        self._apply_app_layer()
+
+    # ---------------- capas por programa ----------------
+
+    def set_active_window(self, ids: list[str]) -> None:
+        """La ventana activa cambió. `ids` son los nombres del programa (clase
+        de ventana en KDE, ejecutable en Windows), en minúscula."""
+        ids = [i.strip().lower() for i in ids if i and i.strip()]
+        self.active_app = ids[0] if ids else ""
+        self._active_ids = ids
+        self._apply_app_layer()
+
+    def _layer_for_active_app(self) -> int:
+        active = set(self._active_ids)
+        for i, layer in enumerate(self.config["layers"]):
+            if active & {a.strip().lower() for a in layer.get("apps", []) if a.strip()}:
+                return i
+        return -1
+
+    def _apply_app_layer(self) -> None:
+        match = self._layer_for_active_app()
+        if match == self._app_match:
+            return  # misma situación (ej: un diálogo del mismo programa): respetar lo que eligió el usuario
+        self._app_match = match
+        if match >= 0:
+            if not self._auto_layer:
+                self._manual_layer = self.layer_index
+                self._auto_layer = True
+            target = match
+        elif self._auto_layer:
+            self._auto_layer = False
+            target = self._manual_layer
+        else:
+            return
+        if target != self.layer_index:
+            self.layer_index = target
+            self._show_layer_change()
+
+    def _show_layer_change(self) -> None:
+        # Muestra la capa en la placa unos segundos, como si se hubiera tocado un botón.
+        was_layer = self.mode == "layer"
+        self._mark_activity()
+        if was_layer:
+            self._send_layer_snapshot()
+
+    def _layer_chosen_by_user(self) -> None:
+        # Cambio de capa a mano: pasa a ser la capa "de base" y ya no se pisa al salir del programa.
+        self._auto_layer = False
+        self._manual_layer = self.layer_index
 
     def _sync_device(self) -> None:
         self.link.send(settings_message(self.config))
@@ -131,6 +189,7 @@ class Controller(QObject):
 
     def select_layer(self, index: int) -> None:
         self.layer_index = max(0, min(index, len(self.config["layers"]) - 1))
+        self._layer_chosen_by_user()
         self._mark_activity()
         self._send_layer_snapshot()
 
@@ -139,8 +198,11 @@ class Controller(QObject):
         if etype == "hello":
             # El firmware acaba de (re)bootear: resincronizamos todo.
             self.layer_index = 0
+            self._layer_chosen_by_user()
+            self._app_match = -1
             self._sync_device()
             self._enter_idle(force=True)
+            self._apply_app_layer()
         elif etype == "net":
             self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather", "bat")}
         elif etype == "button" and evt.get("state") == "down":
@@ -168,12 +230,15 @@ class Controller(QObject):
             run_command(action.get("cmd", ""))
         elif kind == "layer_next":
             self.layer_index = (self.layer_index + 1) % len(self.config["layers"])
+            self._layer_chosen_by_user()
             self._send_layer_snapshot()
         elif kind == "layer_prev":
             self.layer_index = (self.layer_index - 1) % len(self.config["layers"])
+            self._layer_chosen_by_user()
             self._send_layer_snapshot()
         elif kind == "layer_set":
             self.layer_index = max(0, min(action.get("index", 0), len(self.config["layers"]) - 1))
+            self._layer_chosen_by_user()
             self._send_layer_snapshot()
 
     def _run_encoder_action(self, encoder_id: int, delta: int) -> None:

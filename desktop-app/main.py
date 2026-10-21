@@ -2,6 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from macropad.active_window import start_active_window_watcher
 from macropad.controller import Controller
 from macropad.serial_link import SerialLink
 from macropad.ui.main_window import MainWindow
@@ -16,6 +17,7 @@ def main() -> None:
     controller = Controller(link)
     window = MainWindow(link, controller)
     install_tray(window)
+    window_watcher = start_active_window_watcher(controller)  # noqa: F841 (hay que mantenerlo vivo)
 
     link.start()
     controller.start()

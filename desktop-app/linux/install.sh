@@ -9,6 +9,7 @@ PYTHON="$APP_DIR/.venv/bin/python"
 UNIT_DIR="$HOME/.config/systemd/user"
 UNIT="$UNIT_DIR/ttgo-macropad.service"
 PLASMOID_ID="com.github.yyymira.ttgomacropad"
+KWIN_SCRIPT_ID="ttgomacropad-activewindow"
 
 if [[ ! -x "$PYTHON" ]]; then
     echo "Falta el venv. Crealo primero:" >&2
@@ -42,6 +43,18 @@ if kpackagetool6 --type Plasma/Applet --show "$PLASMOID_ID" >/dev/null 2>&1; the
 else
     kpackagetool6 --type Plasma/Applet --install "$APP_DIR/plasmoid"
 fi
+
+# Script de KWin para las capas por programa (avisa qué ventana está activa).
+if kpackagetool6 --type KWin/Script --show "$KWIN_SCRIPT_ID" >/dev/null 2>&1; then
+    kpackagetool6 --type KWin/Script --upgrade "$APP_DIR/kwin-script"
+else
+    kpackagetool6 --type KWin/Script --install "$APP_DIR/kwin-script"
+fi
+kwriteconfig6 --file kwinrc --group Plugins --key "${KWIN_SCRIPT_ID}Enabled" true
+# Recargar el script para que tome la versión nueva.
+dbus-send --session --type=method_call --dest=org.kde.KWin /Scripting \
+    org.kde.kwin.Scripting.unloadScript string:"$KWIN_SCRIPT_ID" >/dev/null 2>&1 || true
+dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure >/dev/null 2>&1 || true
 
 echo
 echo "Listo. Servicio: systemctl --user status ttgo-macropad"

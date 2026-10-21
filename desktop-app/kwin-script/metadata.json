@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Id": "ttgomacropad-activewindow",
+        "Name": "TTGO Macropad: active window",
+        "Name[es]": "TTGO Macropad: ventana activa",
+        "Description": "Tells the TTGO Macropad service which program is in the foreground, for per-program layers",
+        "Description[es]": "Le avisa al servicio del TTGO Macropad qué programa está en primer plano, para las capas por programa",
+        "Authors": [{ "Name": "Yyymira" }],
+        "License": "MIT",
+        "Version": "1.0",
+        "Website": "https://github.com/Yyymira/TTGO-Macropad",
+        "EnabledByDefault": true
+    },
+    "KPackageStructure": "KWin/Script",
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}

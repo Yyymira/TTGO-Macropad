@@ -60,6 +60,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "Keys go to:": "Las teclas van a:",
         "PC": "PC",
         "Phone (Bluetooth)": "Celular (Bluetooth)",
+        "Switch to this layer with programs:": "Pasar a esta capa con los programas:",
+        "e.g. firefox.exe, spotify.exe": "ej: firefox.exe, spotify.exe",
         "Key {n}": "Tecla {n}",
         "Board (GPIO0)": "Placa (GPIO0)",
         "Board (GPIO35)": "Placa (GPIO35)",
