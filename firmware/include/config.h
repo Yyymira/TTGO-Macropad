@@ -26,6 +26,9 @@ constexpr EncoderPins ENCODER_PINS[NUM_ENCODERS] = {
     {21, 22},  // Encoder 1
 };
 
+// Con BOUNCE_WITH_PROMPT_DETECTION (platformio.ini) la pulsación sale al
+// instante; este tiempo es el que el contacto tiene que estar quieto antes
+// de aceptar el próximo cambio.
 constexpr unsigned long BUTTON_DEBOUNCE_MS = 12;
 constexpr uint32_t SERIAL_BAUD = 921600;  // el CH9102 llega a 4 Mbps; debe coincidir con serial_link.py
 
