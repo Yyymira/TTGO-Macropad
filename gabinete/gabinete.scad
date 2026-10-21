@@ -24,9 +24,9 @@ stack_top = 3.2;    // cara superior del PCB -> vidrio del display
 btn_h = 1.8;        // cara superior del PCB -> tope de los botones integrados
 btn_dx = 22.2;      // botones: X desde el centro del PCB (positivo = lado USB-C)
 btn_dy = 8.2;       // botones: ±Y desde el centro del PCB
-disp_w = 26.5;      // área visible del display (medido)
-disp_h = 14.9;
-disp_dx = -3.55;    // centro del área visible respecto del centro del PCB (medido: la imagen empieza a 9 mm del borde opuesto al USB)
+disp_w = 27.8;      // área visible del display (ventana de 28.8 mm, como el TTGO case de kamma_cz)
+disp_h = 16.0;      // (ventana de 17 mm)
+disp_dx = -4.3;     // centro del área visible respecto del centro del PCB (ventana desde 7.1 mm del borde opuesto al USB)
 disp_dy = 0;
 usb_z = 1.6;        // centro del USB-C por encima de la cara superior del PCB
 usb_gap = 0.5;      // extremo del PCB (lado USB) -> cara interna de la pared

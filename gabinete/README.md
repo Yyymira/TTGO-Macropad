@@ -46,6 +46,10 @@ Después imprimí las dos piezas de prueba (~15 min cada una):
   traba firme: si entra muy duro subí `mx_cut`; si queda flojo, bajalo de
   a 0.2 mm (el estándar de placa es 14.0).
 
+La ventana del display usa las medidas de un gabinete para TTGO ya probado:
+[TTGO case de kamma_cz](https://www.thingiverse.com/thing:4983880) (CC BY):
+28.8 × 17 mm, empezando a 7.1 mm del borde del PCB opuesto al USB.
+
 Ajustes ya hechos tras las pruebas impresas: `mx_cut` = 15.0,
 `frame_extra_w` = 1.0 (marco 1 mm más ancho), la apertura del botón lateral
 (`side_btn_gap`, `side_btn_from_end`), el rebaje del conector USB-C
