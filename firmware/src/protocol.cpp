@@ -26,7 +26,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.7.0";
+    doc["fw"] = "1.8.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -93,6 +93,14 @@ static void applySettings(JsonDocument &doc) {
         changed = true;
     }
 
+    uint16_t statsSec = constrain(doc["stats_secs"] | 10, 2, 3600);
+    uint16_t weatherSec = constrain(doc["weather_secs"] | 10, 2, 3600);
+    if (statsSec != settings.statsSec || weatherSec != settings.weatherSec) {
+        settings.statsSec = statsSec;
+        settings.weatherSec = weatherSec;
+        changed = true;
+    }
+
     uint16_t timeout = doc["idle_timeout"] | 15;
     int32_t offset = doc["utc_offset"] | INT32_MIN;
     if (timeout != settings.idleTimeoutSec || offset != settings.utcOffset) {
@@ -143,6 +151,12 @@ static void handleLine(const String &line) {
         String name = doc["name"] | "";
         displaySetLayerToPhone(doc["bt"] | false);
         displaySetLayer(doc["index"] | 0, name, labels);
+    } else if (strcmp(type, "view") == 0) {
+        // Pantalla de reposo fijada a mano desde un botón (momentáneo, no se guarda).
+        const char *value = doc["value"] | "auto";
+        displaySetViewOverride(strcmp(value, "stats") == 0     ? 0
+                               : strcmp(value, "weather") == 0 ? 1
+                                                               : -1);
     } else if (strcmp(type, "ble") == 0) {
         // Capa con destino "celular": la PC decide qué tecla corresponde y la
         // placa la manda por Bluetooth.

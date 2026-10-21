@@ -62,6 +62,8 @@ DEFAULT_CONFIG = {
 # Ajustes que se copian a la placa (WiFi, clima, pantalla de reposo, OTA).
 DEFAULT_DEVICE = {
     "idle_view": "both",  # "stats" | "weather" | "both"
+    "stats_secs": 10,  # modo "both": cuánto dura cada pantalla
+    "weather_secs": 10,
     "wifi_ssid": "",
     "wifi_pass": "",
     "city": "",

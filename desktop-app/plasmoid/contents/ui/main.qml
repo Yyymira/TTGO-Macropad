@@ -16,8 +16,8 @@ PlasmoidItem {
     id: root
 
     readonly property string apiBase: "http://127.0.0.1:47823"
-    readonly property var actionKinds: ["none", "key", "command", "layer_next", "layer_prev", "layer_set"]
-    readonly property var actionNames: [T.tr("None"), T.tr("Key / shortcut"), T.tr("Run command"), T.tr("Next layer"), T.tr("Previous layer"), T.tr("Go to layer…")]
+    readonly property var actionKinds: ["none", "key", "command", "layer_next", "layer_prev", "layer_set", "idle_view"]
+    readonly property var actionNames: [T.tr("None"), T.tr("Key / shortcut"), T.tr("Run command"), T.tr("Next layer"), T.tr("Previous layer"), T.tr("Go to layer…"), T.tr("Switch idle screen")]
     readonly property var buttonNames: [1, 2, 3, 4, 5, 6].map(n => T.tr("Key {n}", {n: n})).concat([
                                         T.tr("Board (GPIO0)"), T.tr("Board (GPIO35)"),
                                         T.tr("Encoder 1 (press)"), T.tr("Encoder 2 (press)")])
@@ -467,8 +467,28 @@ PlasmoidItem {
                             Layout.preferredWidth: Kirigami.Units.gridUnit * 11
                             model: root.idleViewNames
                             currentIndex: Math.max(0, root.idleViews.indexOf(root.deviceAt(root.rev).idle_view || "both"))
-                            onActivated: (i) => root.setDevice("idle_view", root.idleViews[i])
+                            onActivated: (i) => { root.setDevice("idle_view", root.idleViews[i]); root.rev++ }
                         }
+                    }
+                    // Modo "ambos": cuánto dura cada pantalla
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: (root.deviceAt(root.rev).idle_view || "both") === "both"
+                        PC3.Label { text: T.tr("Stats for"); Layout.fillWidth: true }
+                        PC3.SpinBox {
+                            from: 2
+                            to: 3600
+                            value: root.deviceAt(root.rev).stats_secs || 10
+                            onValueModified: root.setDevice("stats_secs", value)
+                        }
+                        PC3.Label { text: T.tr("s, weather for") }
+                        PC3.SpinBox {
+                            from: 2
+                            to: 3600
+                            value: root.deviceAt(root.rev).weather_secs || 10
+                            onValueModified: root.setDevice("weather_secs", value)
+                        }
+                        PC3.Label { text: "s" }
                     }
                     PC3.Label {
                         Layout.fillWidth: true

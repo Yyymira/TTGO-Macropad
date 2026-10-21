@@ -17,6 +17,7 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 | Capa siguiente | Pasa a la capa siguiente; desde la última vuelve a la primera. |
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
+| Cambiar pantalla de reposo | Fija la pantalla de reposo por un rato: cada pulsación pasa a **Auto → Stats → Clima → Auto**, y la placa la muestra enseguida. Es momentáneo: no cambia la configuración, y al reiniciar la PC o la placa vuelve a la configurada. En la placa el botón muestra cuál está activa ("Vista: Clima"). |
 
 Son hasta 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
 cada encoder ("Encoder 1 (apretar)" y "Encoder 2 (apretar)", al apretar la

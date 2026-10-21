@@ -18,6 +18,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "Layer >>": "Capa >>",
         "<< Layer": "<< Capa",
         "Layer {n}": "Capa {n}",
+        "View: {v}": "Vista: {v}",
+        "Auto": "Auto",
+        "Stats": "Stats",
+        "Weather": "Clima",
+        "Switch idle screen": "Cambiar pantalla de reposo",
         # config por defecto
         "Browser": "Navegador",
         # servicio (errores que muestra el widget)

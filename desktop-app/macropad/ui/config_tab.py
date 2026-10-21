@@ -32,6 +32,7 @@ ACTION_CHOICES = [
     (tr("Next layer"), "layer_next"),
     (tr("Previous layer"), "layer_prev"),
     (tr("Go to layer N"), "layer_set"),
+    (tr("Switch idle screen"), "idle_view"),
 ]
 
 

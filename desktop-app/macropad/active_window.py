@@ -17,6 +17,7 @@ from PySide6.QtCore import QObject, QTimer
 DBUS_SERVICE = "io.github.yyymira.TtgoMacropad"
 DBUS_PATH = "/ActiveWindow"
 DBUS_INTERFACE = "io.github.yyymira.TtgoMacropad.ActiveWindow"
+KWIN_SCRIPT_ID = "ttgomacropad-activewindow"
 
 
 def start_active_window_watcher(controller) -> QObject | None:
@@ -31,7 +32,7 @@ def start_active_window_watcher(controller) -> QObject | None:
 def _make_dbus_receiver(controller) -> QObject | None:
     try:
         from PySide6.QtCore import ClassInfo, Slot
-        from PySide6.QtDBus import QDBusConnection
+        from PySide6.QtDBus import QDBusConnection, QDBusMessage
     except ImportError:
         return None
 
@@ -47,6 +48,18 @@ def _make_dbus_receiver(controller) -> QObject | None:
         return None
     bus.registerService(DBUS_SERVICE)
     bus.registerObject(DBUS_PATH, receiver, QDBusConnection.RegisterOption.ExportAllSlots)
+
+    # El script solo avisa cuando cambia la ventana: si el servicio arranca
+    # después que KWin (lo normal al iniciar sesión), le pedimos que se recargue
+    # para que avise ya cuál está activa.
+    for path, iface, method, args in (
+        ("/Scripting", "org.kde.kwin.Scripting", "unloadScript", [KWIN_SCRIPT_ID]),
+        ("/KWin", "org.kde.KWin", "reconfigure", []),
+    ):
+        msg = QDBusMessage.createMethodCall("org.kde.KWin", path, iface, method)
+        if args:
+            msg.setArguments(args)
+        bus.asyncCall(msg)
     return receiver
 
 

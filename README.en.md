@@ -193,7 +193,9 @@ These are set up in the widget's **Device** section (2.4 GHz WiFi network,
 password and city) and are stored on the board.
 
 - **Idle screen**: with the PC connected you choose *Stats only*, *Clock and
-  weather only* or *Both* (alternating every 10 s). If the PC stops sending
+  weather only* or *Both* (alternating; how long each screen lasts is set in
+  the widget, 10 s by default). A button with the *Switch idle screen* action
+  pins one or the other temporarily. If the PC stops sending
   data for 5 s (turned off, service stopped, or the board on battery away
   from the PC), it always shows the clock and the weather. Weather comes from
   [Open-Meteo](https://open-meteo.com) (free, no API key): temperature,

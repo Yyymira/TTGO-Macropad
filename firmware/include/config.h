@@ -43,7 +43,6 @@ constexpr uint32_t HOST_TIMEOUT_MS = 5000;
 
 constexpr uint32_t WEATHER_PERIOD_MS = 15UL * 60 * 1000;
 constexpr uint32_t WEATHER_RETRY_MS = 60UL * 1000;
-constexpr uint32_t IDLE_ALTERNATE_MS = 10UL * 1000;  // modo "ambos": stats <-> clima
 constexpr uint32_t NET_REPORT_MS = 5000;
 constexpr const char *DEVICE_HOSTNAME = "ttgo-macropad";
 

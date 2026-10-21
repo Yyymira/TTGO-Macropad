@@ -185,7 +185,9 @@ Se configuran desde la sección **Dispositivo** del widget (red WiFi de 2.4 GHz,
 contraseña y ciudad) y quedan guardados en la placa.
 
 - **Pantalla de reposo**: con la PC conectada se elige *Solo stats*, *Solo
-  reloj y clima* o *Ambos* (alterna cada 10 s). Si la PC deja de mandar datos
+  reloj y clima* o *Ambos* (alterna; cuánto dura cada pantalla se elige en el
+  widget, 10 s por defecto). Un botón con la acción *Cambiar pantalla de
+  reposo* fija una u otra momentáneamente. Si la PC deja de mandar datos
   por 5 s (apagada, servicio detenido, o la placa a batería lejos de la PC),
   queda siempre el reloj con el clima. El clima viene de
   [Open-Meteo](https://open-meteo.com) (gratis, sin API key): temperatura,

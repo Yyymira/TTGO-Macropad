@@ -19,6 +19,8 @@ struct DeviceSettings {
     int32_t utcOffset = INT32_MIN;  // segundos; INT32_MIN = desconocido
     IdleView idleView = IdleView::Both;
     uint16_t idleTimeoutSec = 15;
+    uint16_t statsSec = 10;    // modo "ambos": cuánto dura cada pantalla
+    uint16_t weatherSec = 10;
     Lang lang = Lang::En;
 };
 

@@ -16,8 +16,16 @@ from macropad.stats import StatsReader
 STATS_PUSH_INTERVAL_MS = 1000
 
 
-def action_label(action: dict) -> str:
+# Acción "idle_view": cada pulsación fija la pantalla de reposo en la siguiente
+# (None = la configurada). Es momentáneo: no se guarda en la config.
+VIEW_CYCLE = [None, "stats", "weather"]
+VIEW_NAMES = {None: "Auto", "stats": "Stats", "weather": "Weather"}
+
+
+def action_label(action: dict, view_override: str | None = None) -> str:
     kind = action.get("action", "none")
+    if kind == "idle_view":
+        return tr("View: {v}", v=tr(VIEW_NAMES[view_override]))
     if kind == "key":
         return "+".join(k.upper() for k in action.get("keys", []))[:14]
     if kind == "layer_next":
@@ -78,6 +86,8 @@ def settings_message(config: dict) -> dict:
         "idle_timeout": config.get("idle_timeout_sec", 15),
         "utc_offset": time.localtime().tm_gmtoff,  # hora local mientras el clima no la confirma
         "lang": LANG,  # idioma de la pantalla de la placa
+        "stats_secs": device.get("stats_secs", 10),
+        "weather_secs": device.get("weather_secs", 10),
     }
     if device.get("lat") is not None and device.get("lon") is not None:
         msg["lat"] = device["lat"]
@@ -108,6 +118,7 @@ class Controller(QObject):
         self._app_match = -1  # capa que corresponde a la ventana actual (-1 = ninguna)
         self._auto_layer = False  # la capa activa la eligió la ventana, no el usuario
         self._manual_layer = 0  # a la que se vuelve al salir del programa
+        self.view_override: str | None = None  # pantalla de reposo fijada con un botón
 
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
@@ -201,6 +212,7 @@ class Controller(QObject):
             self._layer_chosen_by_user()
             self._app_match = -1
             self._sync_device()
+            self.link.send({"type": "view", "value": self.view_override or "auto"})
             self._enter_idle(force=True)
             self._apply_app_layer()
         elif etype == "net":
@@ -228,6 +240,11 @@ class Controller(QObject):
             self._send_keys(action.get("keys", []))
         elif kind == "command":
             run_command(action.get("cmd", ""))
+        elif kind == "idle_view":
+            i = VIEW_CYCLE.index(self.view_override)
+            self.view_override = VIEW_CYCLE[(i + 1) % len(VIEW_CYCLE)]
+            self.link.send({"type": "view", "value": self.view_override or "auto"})
+            self._enter_idle()  # mostrar ya la pantalla elegida
         elif kind == "layer_next":
             self.layer_index = (self.layer_index + 1) % len(self.config["layers"])
             self._layer_chosen_by_user()
@@ -275,7 +292,7 @@ class Controller(QObject):
 
     def _send_layer_snapshot(self) -> None:
         layer = self.current_layer
-        labels = [action_label(a) for a in layer.get("buttons", [])]
+        labels = [action_label(a, self.view_override) for a in layer.get("buttons", [])]
         self.link.send(
             {"type": "layer", "index": self.layer_index, "name": layer.get("name", ""), "labels": labels,
              "bt": layer_to_phone(layer)}

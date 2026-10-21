@@ -18,7 +18,8 @@ static String layerName = "";
 static String layerLabels[NUM_BUTTONS];
 
 static bool hostPresent = false;
-static bool layerToPhone = false;  // capa con destino celular (con la PC presente)
+static bool layerToPhone = false;
+static int8_t viewOverride = -1;  // pantalla de reposo fijada desde un botón  // capa con destino celular (con la PC presente)
 static bool showingWeather = false;
 static uint8_t bothPhase = 0;  // modo "ambos": 0 = stats, 1 = clima
 static uint32_t lastPhaseMs = 0;
@@ -317,6 +318,7 @@ static void renderStats() {
 
 static bool idleShowsWeather() {
     if (!hostPresent) return true;
+    if (viewOverride >= 0) return viewOverride == 1;
     switch (settings.idleView) {
         case IdleView::Stats: return false;
         case IdleView::Weather: return true;
@@ -406,7 +408,8 @@ void displayLoop() {
     if (otaActive) return;
     uint32_t now = millis();
 
-    if (hostPresent && settings.idleView == IdleView::Both && now - lastPhaseMs >= IDLE_ALTERNATE_MS) {
+    uint32_t phaseMs = 1000UL * (bothPhase == 0 ? settings.statsSec : settings.weatherSec);
+    if (hostPresent && viewOverride < 0 && settings.idleView == IdleView::Both && now - lastPhaseMs >= phaseMs) {
         lastPhaseMs = now;
         bothPhase ^= 1;
         if (currentMode == DisplayMode::Idle) render();
@@ -443,6 +446,14 @@ void displayLoop() {
         lastBle = ble;
         if (currentMode == DisplayMode::Layer && (!hostPresent || layerToPhone)) render();
     }
+}
+
+void displaySetViewOverride(int8_t view) {
+    if (view == viewOverride) return;
+    viewOverride = view;
+    bothPhase = 0;
+    lastPhaseMs = millis();
+    if (currentMode == DisplayMode::Idle) render();
 }
 
 void displaySetLayerToPhone(bool toPhone) { layerToPhone = toPhone; }  // se dibuja con displaySetLayer
