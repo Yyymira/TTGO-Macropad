@@ -17,7 +17,7 @@ understands fewer keys (see [On Windows](#on-windows)).
 | Next layer | Goes to the next layer; from the last one it wraps to the first. |
 | Previous layer | Goes to the previous layer; from the first one it wraps to the last. |
 | Go to layer… | Jumps to a fixed layer. **Counting starts at 0**: the first layer is 0, the second is 1, and so on. |
-| Browser | An action in the browser, through the [extension](../README.en.md#browser-extension): video speed, forward/back 10 s, skip ad, tab volume, go to the playing tab, meeting mic and camera. On encoders you pick one per direction (e.g. forward/back). |
+| Browser | An action in the browser, through the [extension](../README.en.md#browser-extension): video speed, forward/back 10 s, skip ad, tab volume, go to the playing tab, meeting mic and camera, or **click a button on a page** you picked (see below). On encoders you pick one per direction (e.g. forward/back). |
 | Switch idle screen | Pins the idle screen for a while: each press goes **Auto → Stats → Weather → Media → Auto**, and the board shows it right away. It's temporary: it doesn't change your settings, and restarting the PC or the board goes back to the configured one. On the board, the button shows which one is active ("View: Weather"), and the idle screens show a small indicator: **A** when they alternate on their own, a **pin** when one is fixed (orange if you pinned it with the button). |
 
 There are up to 10 buttons per layer: the 6 keys, the 2 on the board, and
@@ -31,6 +31,17 @@ something assigned.
 Each encoder's rotation is set up with **Keys** (one combination for
 clockwise and another for counterclockwise; each "click" presses it once) or
 with **Commands** (one command per direction, run on each "click").
+
+### Alias: how it looks on the screen
+
+Each button has an **Alias** field (at the end of its row in the widget). If
+you fill it in, the board shows that instead of the automatic label: for
+example `Prev tab` instead of `CTRL+SHIFT+TAB`. Up to 24 characters, no
+accents (the screen fonts are basic).
+
+Without an alias, anything that doesn't fit in the cell gets a smaller font,
+then splits into two lines (breaking at the `+` signs) and, if it still
+doesn't fit, gets cut with "...".
 
 ## How to write a key or a shortcut
 
@@ -230,6 +241,27 @@ Examples with Windows shortcuts:
 | Switch virtual desktops (encoder) | clockwise `win, ctrl, right`, counterclockwise `win, ctrl, left` |
 | Task Manager | `ctrl, shift, esc` |
 | Settings | `win, i` |
+
+## Page buttons ("Click…")
+
+Any button on a web page can go on a macropad key, for example YouTube's
+**Like**:
+
+1. On the page, press the extension icon → **Choose a button on this page**.
+2. Whatever is under the mouse gets a red highlight: click the button (Esc
+   cancels) and give it a name ("Like").
+3. In the widget, pick the action **Browser → Click a page button…** and,
+   next to it, **Like (youtube.com)**.
+
+When you press the key, the extension clicks that button: in the tab in
+front if it's from that site, otherwise in the one that's playing, otherwise
+in any tab of that site. It works even if you're on another tab.
+
+The extension stores a stable description of the button (its type and the
+containers around it), not its text, because many change (Like includes the
+number of likes). If a site is redesigned and the button can't be found
+anymore, a notice shows up on the page: pick it again. Saved buttons are
+listed and deleted from the extension icon.
 
 ## Per-program layers
 

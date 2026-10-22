@@ -34,10 +34,13 @@ ART_MAX_TRIES = 8
 
 def action_label(action: dict, view_override: str | None = None) -> str:
     kind = action.get("action", "none")
+    alias = ascii_text(action.get("label", ""))
+    if alias and kind != "none":
+        return alias[:24]  # el usuario eligió cómo se ve en la pantalla
     if kind == "idle_view":
         return tr("View: {v}", v=tr(VIEW_NAMES[view_override]))
     if kind == "key":
-        return "+".join(k.upper() for k in action.get("keys", []))[:14]
+        return "+".join(k.upper() for k in action.get("keys", []))[:24]
     if kind == "layer_next":
         return tr("Layer >>")
     if kind == "layer_prev":
@@ -47,6 +50,8 @@ def action_label(action: dict, view_override: str | None = None) -> str:
     if kind == "command":
         return action.get("cmd", "").strip()[:14]
     if kind == "browser":
+        if action.get("cmd") == "click":
+            return ascii_text(action.get("target_name", ""))[:24]
         return tr(BROWSER_LABELS.get(action.get("cmd", ""), ""))
     return ""
 
@@ -88,6 +93,9 @@ def layer_to_phone(layer: dict) -> bool:
 def _compact_action(action: dict) -> dict:
     kind = action.get("action", "none")
     out = {"a": kind}
+    alias = ascii_text(action.get("label", ""))
+    if alias:
+        out["l"] = alias[:24]
     if kind == "key":
         out["k"] = action.get("keys", [])
     elif kind == "layer_set":
@@ -181,6 +189,7 @@ class Controller(QObject):
         self._browser_media: dict | None = None
         self._browser_media_at = 0.0
         self._meeting: dict = {}
+        self.browser_targets: list[dict] = []  # botones de páginas elegidos en la extensión
 
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
@@ -235,6 +244,11 @@ class Controller(QObject):
     # ---------------- extensión del navegador ----------------
 
     def _on_browser_state(self, data: dict) -> None:
+        if isinstance(data.get("targets"), list):
+            self.browser_targets = [
+                {"id": str(t.get("id", ""))[:40], "name": str(t.get("name", ""))[:40], "site": str(t.get("site", ""))[:80]}
+                for t in data["targets"][:100] if isinstance(t, dict)
+            ]
         site = str(data.get("site") or "").lower().removeprefix("www.")
         if site != self._browser_site:
             self._browser_site = site
@@ -377,7 +391,7 @@ class Controller(QObject):
         elif kind == "command":
             run_command(action.get("cmd", ""))
         elif kind == "browser":
-            self.browser.send_command({"action": action.get("cmd", "")})
+            self.browser.send_command({"action": action.get("cmd", ""), "target": action.get("target", "")})
         elif kind == "idle_view":
             i = VIEW_CYCLE.index(self.view_override)
             self.view_override = VIEW_CYCLE[(i + 1) % len(VIEW_CYCLE)]

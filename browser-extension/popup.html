@@ -10,6 +10,14 @@
   #status.ok { color: #2e9e4f; }
   #help { font-size: 12px; opacity: .75; margin: 8px 0 0; }
   button { font: inherit; padding: 6px 12px; cursor: pointer; }
+  h2 { font-size: 13px; margin: 14px 0 6px; }
+  #pick { width: 100%; margin-top: 10px; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; }
+  li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li small { opacity: .6; }
+  li button { padding: 2px 8px; font-size: 12px; }
+  #empty { font-size: 12px; opacity: .6; margin: 0; }
 </style>
 </head>
 <body>
@@ -18,6 +26,10 @@
   <button id="pair"></button>
   <button id="unpair" hidden></button>
   <p id="help"></p>
+  <button id="pick"></button>
+  <h2 id="targetsTitle"></h2>
+  <ul id="targets"></ul>
+  <p id="empty"></p>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -69,6 +69,9 @@ class ButtonRow(QWidget):
         self.combo = QComboBox()
         for text, _ in ACTION_CHOICES:
             self.combo.addItem(text)
+        self.alias_edit = QLineEdit()
+        self.alias_edit.setPlaceholderText(tr("Alias"))
+        self.alias_edit.setMaxLength(24)
         self.value_edit = QLineEdit()
         self.value_edit.setPlaceholderText(tr("e.g. ctrl,t  or  playpause  (or the command to run, or a browser action)"))
 
@@ -76,6 +79,7 @@ class ButtonRow(QWidget):
         row.addWidget(QLabel(label), 0)
         row.addWidget(self.combo, 1)
         row.addWidget(self.value_edit, 2)
+        row.addWidget(self.alias_edit, 1)
 
     def set_action(self, action: dict) -> None:
         kind, value = _action_to_combo_value(action)
@@ -84,10 +88,14 @@ class ButtonRow(QWidget):
                 self.combo.setCurrentIndex(i)
                 break
         self.value_edit.setText(value)
+        self.alias_edit.setText(action.get("label", ""))
 
     def get_action(self) -> dict:
         kind = ACTION_CHOICES[self.combo.currentIndex()][1]
-        return _combo_value_to_action(kind, self.value_edit.text())
+        action = _combo_value_to_action(kind, self.value_edit.text())
+        if self.alias_edit.text().strip():
+            action["label"] = self.alias_edit.text().strip()
+        return action
 
 
 class EncoderRow(QWidget):

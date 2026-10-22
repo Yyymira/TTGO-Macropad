@@ -35,6 +35,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "Switch idle screen": "Cambiar pantalla de reposo",
         # config por defecto
         "Browser": "Navegador",
+        "Alias": "Alias",
         # servicio (errores que muestra el widget)
         "Couldn't find the city “{city}”": "No encontré la ciudad «{city}»",
         "Couldn't look up the city (no internet?)": "No pude buscar la ciudad (¿sin internet?)",
@@ -57,7 +58,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "None": "Ninguna",
         "Key / shortcut": "Tecla / atajo",
         "Run command": "Ejecutar comando",
-        "Browser": "Navegador",
         "Next layer": "Capa siguiente",
         "Previous layer": "Capa anterior",
         "Go to layer N": "Ir a capa N",

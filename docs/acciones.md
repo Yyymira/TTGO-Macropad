@@ -17,7 +17,7 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 | Capa siguiente | Pasa a la capa siguiente; desde la última vuelve a la primera. |
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
-| Navegador | Una acción en el navegador, con la [extensión](../README.md#extensión-del-navegador): velocidad del video, adelantar/atrasar 10 s, saltar anuncio, volumen de la pestaña, ir a la pestaña que suena, micrófono y cámara de la reunión. En los encoders se elige una para cada sentido (por ejemplo, adelantar/atrasar). |
+| Navegador | Una acción en el navegador, con la [extensión](../README.md#extensión-del-navegador): velocidad del video, adelantar/atrasar 10 s, saltar anuncio, volumen de la pestaña, ir a la pestaña que suena, micrófono y cámara de la reunión, o **clic en un botón de una página** que hayas elegido (ver abajo). En los encoders se elige una para cada sentido (por ejemplo, adelantar/atrasar). |
 | Cambiar pantalla de reposo | Fija la pantalla de reposo por un rato: cada pulsación pasa a **Auto → Stats → Clima → Multimedia → Auto**, y la placa la muestra enseguida. Es momentáneo: no cambia la configuración, y al reiniciar la PC o la placa vuelve a la configurada. En la placa el botón muestra cuál está activa ("Vista: Clima"), y las pantallas de reposo muestran un indicador chico: **A** si alternan solas, un **pin** si quedó fija (naranja si la fijaste con el botón). |
 
 Son hasta 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
@@ -30,6 +30,16 @@ columna a la izquierda solo en las capas donde tienen algo asignado.
 El giro de cada encoder se configura con **Teclas** (una combinación para el
 giro horario y otra para el antihorario; cada "click" la aprieta una vez) o con
 **Comandos** (un comando para cada sentido, que se ejecuta en cada "click").
+
+### Alias: cómo se ve en la pantalla
+
+Cada botón tiene un campo **Alias** (al final de su fila en el widget). Si lo
+completás, la placa muestra eso en vez de lo automático: por ejemplo
+`Pest. ant.` en lugar de `CTRL+SHIFT+TAB`. Hasta 24 caracteres, sin tildes
+(las fuentes de la pantalla son básicas).
+
+Sin alias, lo que no entre en la casilla se achica, después se parte en dos
+renglones (cortando en los `+`) y, si igual no entra, se recorta con "...".
 
 ## Cómo escribir una tecla o un atajo
 
@@ -230,6 +240,28 @@ Ejemplos con atajos de Windows:
 | Cambiar de escritorio virtual (encoder) | horario `win, ctrl, right`, antihorario `win, ctrl, left` |
 | Administrador de tareas | `ctrl, shift, esc` |
 | Configuración | `win, i` |
+
+## Botones de páginas ("Clic en…")
+
+Cualquier botón de una página web puede ir a una tecla del macropad, por
+ejemplo el **Me gusta** de YouTube:
+
+1. En la página, tocá el ícono de la extensión → **Elegir un botón de esta
+   página**.
+2. Lo que tenga el mouse encima se resalta en rojo: hacé clic en el botón
+   (Esc cancela) y ponele un nombre ("Like").
+3. En el widget, elegí la acción **Navegador → Clic en un botón de una
+   página…** y, al lado, **Like (youtube.com)**.
+
+Al apretar la tecla, la extensión hace clic en ese botón: en la pestaña que
+tenés al frente si es de ese sitio, si no en la que está sonando, si no en
+cualquiera del sitio. Funciona aunque estés en otra pestaña.
+
+La extensión guarda una descripción estable del botón (su tipo y los
+contenedores que lo rodean), no su texto, porque muchos cambian (el Me gusta
+incluye la cantidad de likes). Si un sitio se rediseña y el botón deja de
+encontrarse, aparece un cartel en la página: volvé a elegirlo. Los botones
+guardados se ven y se borran desde el ícono de la extensión.
 
 ## Capas por programa
 

@@ -13,7 +13,17 @@ let lastSent = "";
 let lastSentAt = 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const keyReady = ext.storage.local.get("key").then((v) => { key = v.key || null; });
+let targets = []; // botones de páginas elegidos por el usuario: {id, name, site, selector, index, hint}
+const keyReady = ext.storage.local.get(["key", "targets"]).then((v) => {
+    key = v.key || null;
+    targets = v.targets || [];
+});
+
+async function saveTargets() {
+    await ext.storage.local.set({ targets });
+    lastSent = "";
+    push();
+}
 
 function hostOf(url) {
     try {
@@ -73,7 +83,10 @@ async function push() {
     if (!key) return;
     const m = mediaTab();
     const meet = meetingTab();
-    const body = JSON.stringify({ site, media: m ? m.v.media : null, meeting: meet ? meet.v.meeting : null });
+    const body = JSON.stringify({
+        site, media: m ? m.v.media : null, meeting: meet ? meet.v.meeting : null,
+        targets: targets.map((t) => ({ id: t.id, name: t.name, site: t.site })),
+    });
     // Sin cambios no se manda, salvo un refresco cada 2 s (para que el servicio sepa que sigue).
     if (body === lastSent && Date.now() - lastSentAt < 2000) return;
     lastSent = body;
@@ -96,6 +109,21 @@ ext.runtime.onMessage.addListener((msg, sender, reply) => {
         if (msg.meeting) meetingTabs.set(tabId, { meeting: msg.meeting, at: Date.now() });
         else meetingTabs.delete(tabId);
         push();
+    } else if (msg.type === "target_saved") {
+        const t = { ...msg.target, id: Date.now().toString(36) };
+        targets.push(t);
+        saveTargets();
+    } else if (msg.type === "targets") {
+        keyReady.then(() => reply(targets));
+        return true;
+    } else if (msg.type === "delete_target") {
+        targets = targets.filter((t) => t.id !== msg.id);
+        saveTargets().then(() => reply(true));
+        return true;
+    } else if (msg.type === "start_pick") {
+        ext.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+            if (tab) ext.tabs.sendMessage(tab.id, { type: "command", action: "pick" }).catch(() => {});
+        });
     } else if (msg.type === "pair") {
         pair().then(reply);
         return true;
@@ -145,7 +173,32 @@ async function status() {
 }
 
 // --- órdenes del macropad ---
-async function runCommand(action) {
+// Pestaña donde hacer clic en un botón guardado: la que está al frente si es
+// de ese sitio, si no la que está sonando, si no cualquiera del sitio.
+async function tabForSite(siteName) {
+    const matches = (tab) => { const h = hostOf(tab.url || ""); return h === siteName || h.endsWith("." + siteName); };
+    try {
+        const win = await ext.windows.getLastFocused();
+        const [active] = await ext.tabs.query({ active: true, windowId: win.id });
+        if (active && matches(active)) return active.id;
+    } catch { /* sin ventanas */ }
+    const m = mediaTab();
+    if (m) {
+        const tab = await ext.tabs.get(m.tabId).catch(() => null);
+        if (tab && matches(tab)) return tab.id;
+    }
+    const any = (await ext.tabs.query({})).find(matches);
+    return any ? any.id : null;
+}
+
+async function runCommand(action, command = {}) {
+    if (action === "click") {
+        await keyReady;
+        const t = targets.find((x) => x.id === command.target);
+        const tabId = t && await tabForSite(t.site);
+        if (tabId !== null && tabId !== undefined) ext.tabs.sendMessage(tabId, { type: "command", action: "click", target: t }).catch(() => {});
+        return;
+    }
     if (action === "focus_media_tab") {
         const m = mediaTab();
         if (!m) return;
@@ -167,7 +220,7 @@ async function pollLoop() {
             const r = await fetch(API + "/browser/poll", { headers: { "X-Macropad-Key": key } });
             if (r.status === 401) { await forgetKey(); continue; }
             const data = await r.json();
-            for (const c of data.commands || []) runCommand(c.action);
+            for (const c of data.commands || []) runCommand(c.action, c);
         } catch {
             await sleep(3000); // servicio apagado
         }

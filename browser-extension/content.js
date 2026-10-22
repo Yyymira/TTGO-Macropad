@@ -95,7 +95,7 @@
 
     // --- cartelito sobre la página (velocidad, volumen) ---
     let toastEl = null, toastTimer = 0;
-    function toast(text) {
+    function toast(text, ms = 900) {
         if (!toastEl) {
             toastEl = document.createElement("div");
             toastEl.style.cssText = "position:fixed;left:50%;bottom:12%;transform:translateX(-50%);z-index:2147483647;" +
@@ -106,15 +106,108 @@
         toastEl.textContent = text;
         toastEl.style.opacity = "1";
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toastEl.style.opacity = "0"; }, 900);
+        toastTimer = setTimeout(() => { toastEl.style.opacity = "0"; }, ms);
     }
     const msg = (name, value) => ext.i18n.getMessage(name, [String(value)]);
+
+    // --- botones de la página elegidos por el usuario ("Clic en…") ---
+    // No se guarda "el botón con este texto" (el de Me gusta incluye la cantidad
+    // de likes, que cambia), sino una descripción estable: el tipo de elemento y
+    // los contenedores con nombre propio que lo rodean (en YouTube, por ejemplo,
+    // like-button-view-model). Si el sitio se rediseña, puede hacer falta volver
+    // a elegirlo.
+    const looksStable = (id) => id && !/\d{3,}|^[a-f0-9-]{10,}$|[:]/i.test(id);
+    const STABLE_ATTRS = ["data-testid", "data-test-id", "data-tid", "data-action", "name"];
+
+    function segment(el) {
+        const tag = el.localName;
+        if (looksStable(el.id)) return { sel: "#" + CSS.escape(el.id), stop: true };
+        for (const a of STABLE_ATTRS) {
+            const v = el.getAttribute(a);
+            if (v && v.length < 60) return { sel: `${tag}[${a}="${CSS.escape(v)}"]`, named: true };
+        }
+        return { sel: tag, named: tag.includes("-") };
+    }
+
+    function describe(target) {
+        const el = target.closest("button, a, [role=button], input, [tabindex]") || target;
+        const parts = [];
+        for (let node = el; node && node !== document.documentElement && parts.length < 6; node = node.parentElement) {
+            const seg = segment(node);
+            if (node === el || seg.named || seg.stop) parts.unshift(seg.sel);
+            if (seg.stop) break;
+        }
+        const selector = parts.join(" ");
+        const matches = [...document.querySelectorAll(selector)];
+        const label = (el.getAttribute("aria-label") || el.getAttribute("title") || "").trim();
+        return {
+            selector,
+            index: Math.max(0, matches.indexOf(el)),
+            hint: { tag: el.localName, label: label.split(/\s+/).slice(0, 3).join(" "), text: (el.innerText || "").trim().slice(0, 30) },
+            suggestedName: (label || el.innerText || "").trim().split(/\s+/).slice(0, 3).join(" ").slice(0, 24),
+        };
+    }
+
+    function findTarget(t) {
+        const matches = document.querySelectorAll(t.selector);
+        if (matches.length) return matches[Math.min(t.index || 0, matches.length - 1)];
+        // Plan B: mismo tipo de elemento y misma descripción o texto
+        const h = t.hint || {};
+        return [...document.querySelectorAll(h.tag || "button")].find((e) =>
+            (h.label && (e.getAttribute("aria-label") || "").startsWith(h.label)) ||
+            (h.text && (e.innerText || "").trim().startsWith(h.text))) || null;
+    }
+
+    // Modo selección: resalta lo que está bajo el mouse; clic = elegir, Esc = cancelar
+    let picking = false;
+    function startPicker() {
+        if (picking) return;
+        picking = true;
+        const box = document.createElement("div");
+        box.style.cssText = "position:fixed;z-index:2147483646;pointer-events:none;border:2px solid #c8363c;" +
+            "background:rgba(200,54,60,.15);border-radius:4px;transition:all .05s";
+        document.documentElement.appendChild(box);
+        toast(ext.i18n.getMessage("pickHelp"), 4000);
+        const over = (e) => {
+            const r = (e.target.closest("button, a, [role=button], input, [tabindex]") || e.target).getBoundingClientRect();
+            Object.assign(box.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+        };
+        const stop = () => {
+            picking = false;
+            box.remove();
+            document.removeEventListener("mouseover", over, true);
+            document.removeEventListener("click", click, true);
+            document.removeEventListener("keydown", key, true);
+        };
+        const click = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            stop();
+            const d = describe(e.target);
+            const name = prompt(ext.i18n.getMessage("pickName"), d.suggestedName || location.hostname);
+            if (name === null) return;
+            send({ type: "target_saved", target: { name: name.trim().slice(0, 24) || d.suggestedName,
+                site: location.hostname.replace(/^www\./, ""), selector: d.selector, index: d.index, hint: d.hint } });
+            toast(ext.i18n.getMessage("pickSaved", [name.trim() || d.suggestedName]));
+        };
+        const key = (e) => { if (e.key === "Escape") { e.preventDefault(); stop(); } };
+        document.addEventListener("mouseover", over, true);
+        document.addEventListener("click", click, true);
+        document.addEventListener("keydown", key, true);
+    }
 
     // --- órdenes del macropad ---
     const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
     ext.runtime.onMessage.addListener((m) => {
         if (!m || m.type !== "command") return;
         const a = m.action;
+        if (a === "pick") { startPicker(); return; }
+        if (a === "click") {
+            const el = m.target && findTarget(m.target);
+            if (el) el.click();
+            else toast(ext.i18n.getMessage("clickMissing", [m.target ? m.target.name : "?"]), 3000);
+            return;
+        }
         if (a === "toggle_mic" || a === "toggle_cam") {
             const meet = meetingButtons();
             const b = meet && (a === "toggle_mic" ? meet.mic : meet.cam);

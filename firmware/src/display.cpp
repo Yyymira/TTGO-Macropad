@@ -508,10 +508,34 @@ static void renderMedia() {
 }
 
 // Etiqueta centrada en su celda; si no entra con la fuente normal, usa la chica.
+// Si no entra ni con la letra chica, se parte en dos renglones (cortando en
+// "+" o en un espacio, lo más cerca del medio) y lo que siga sin entrar se
+// recorta con "...". Nada se sale de la celda.
 static void drawCell(const String &label, int x, int y, int w, int h) {
     tft.drawRect(x, y, w, h, TFT_DARKGREY);
-    tft.setTextFont(tft.textWidth(label, 2) <= w - 4 ? 2 : 1);
-    tft.drawString(label, x + w / 2, y + h / 2);
+    const int maxW = w - 4, cx = x + w / 2, cy = y + h / 2;
+    if (tft.textWidth(label, 2) <= maxW || tft.textWidth(label, 1) <= maxW) {
+        tft.setTextFont(tft.textWidth(label, 2) <= maxW ? 2 : 1);
+        tft.drawString(label, cx, cy);
+        return;
+    }
+    int cut = -1;
+    for (int i = 1; i < (int)label.length() - 1; i++) {
+        char c = label[i];
+        if ((c == '+' || c == ' ') && (cut < 0 || abs(i - (int)label.length() / 2) < abs(cut - (int)label.length() / 2))) {
+            cut = i;
+        }
+    }
+    if (cut < 0) cut = label.length() / 2;
+    String a = label.substring(0, label[cut] == ' ' ? cut : cut + 1);  // el "+" queda al final del primer renglón
+    String b = label.substring(cut + 1);
+    a.trim();
+    b.trim();
+    int font = (tft.textWidth(a, 2) <= maxW && tft.textWidth(b, 2) <= maxW && h >= 34) ? 2 : 1;
+    int lineH = font == 2 ? 16 : 9;
+    tft.setTextFont(font);
+    tft.drawString(fitText(a, font, maxW), cx, cy - lineH / 2);
+    tft.drawString(fitText(b, font, maxW), cx, cy + lineH / 2);
 }
 
 static void renderLayer() {

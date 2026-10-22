@@ -118,11 +118,12 @@ PlasmoidItem {
 
     // Acciones "Navegador" (las ejecuta la extensión browser-extension/)
     readonly property var browserActions: ["speed_up", "speed_down", "speed_reset", "seek_forward", "seek_back", "skip_ad",
-                                           "tab_volume_up", "tab_volume_down", "focus_media_tab", "toggle_mic", "toggle_cam"]
+                                           "tab_volume_up", "tab_volume_down", "focus_media_tab", "toggle_mic", "toggle_cam", "click"]
     readonly property var browserActionNames: [T.tr("Video speed +"), T.tr("Video speed -"), T.tr("Video speed 1x"),
                                                T.tr("Forward 10 s"), T.tr("Back 10 s"), T.tr("Skip ad (YouTube)"),
                                                T.tr("Tab volume +"), T.tr("Tab volume -"), T.tr("Go to the playing tab"),
-                                               T.tr("Meeting: microphone"), T.tr("Meeting: camera")]
+                                               T.tr("Meeting: microphone"), T.tr("Meeting: camera"), T.tr("Click a page button…")]
+    readonly property var browserTargets: (status.browser && status.browser.targets) || []
 
     Timer {
         interval: root.expanded ? 1000 : 5000
@@ -414,7 +415,21 @@ PlasmoidItem {
                                 Layout.fillWidth: true
                                 model: root.browserActionNames
                                 currentIndex: Math.max(0, root.browserActions.indexOf(brow.act.cmd || ""))
-                                onActivated: (i) => root.setButtonField(brow.index, "cmd", root.browserActions[i])
+                                onActivated: (i) => { root.setButtonField(brow.index, "cmd", root.browserActions[i]); root.rev++ }
+                            }
+                            // "Clic en…": cuál de los botones guardados en la extensión
+                            PC3.ComboBox {
+                                visible: brow.act.action === "browser" && brow.act.cmd === "click"
+                                Layout.fillWidth: true
+                                readonly property var names: root.browserTargets.map(t => t.name + " (" + t.site + ")")
+                                model: names.length ? names : [brow.act.target_name || T.tr("Choose buttons from the extension")]
+                                currentIndex: Math.max(0, root.browserTargets.findIndex(t => t.id === brow.act.target))
+                                onActivated: (i) => {
+                                    const t = root.browserTargets[i]
+                                    if (!t) return
+                                    root.setButtonField(brow.index, "target", t.id)
+                                    root.setButtonField(brow.index, "target_name", t.name)
+                                }
                             }
                             PC3.SpinBox {
                                 visible: brow.act.action === "layer_set"
@@ -426,6 +441,17 @@ PlasmoidItem {
                             Item {
                                 visible: ["key", "command", "browser", "layer_set"].indexOf(brow.act.action) < 0
                                 Layout.fillWidth: true
+                            }
+                            // Cómo se ve en la pantalla de la placa (vacío = automático)
+                            PC3.TextField {
+                                visible: brow.act.action !== "none"
+                                Layout.preferredWidth: Kirigami.Units.gridUnit * 6
+                                placeholderText: T.tr("Alias")
+                                maximumLength: 24
+                                text: brow.act.label || ""
+                                onTextEdited: root.setButtonField(brow.index, "label", text)
+                                PC3.ToolTip.text: T.tr("Name shown on the board's screen (empty = automatic)")
+                                PC3.ToolTip.visible: hovered
                             }
                         }
                     }
@@ -457,14 +483,14 @@ PlasmoidItem {
                                 PC3.Label { text: "↻" }
                                 PC3.ComboBox {
                                     Layout.fillWidth: true
-                                    model: root.browserActionNames
+                                    model: root.browserActionNames.slice(0, -1)
                                     currentIndex: Math.max(0, root.browserActions.indexOf(erow.enc.cw_browser || ""))
                                     onActivated: (i) => root.setEncoderKeys(erow.index, "cw_browser", root.browserActions[i])
                                 }
                                 PC3.Label { text: "↺" }
                                 PC3.ComboBox {
                                     Layout.fillWidth: true
-                                    model: root.browserActionNames
+                                    model: root.browserActionNames.slice(0, -1)
                                     currentIndex: Math.max(0, root.browserActions.indexOf(erow.enc.ccw_browser || ""))
                                     onActivated: (i) => root.setEncoderKeys(erow.index, "ccw_browser", root.browserActions[i])
                                 }

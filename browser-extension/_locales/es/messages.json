@@ -1,14 +1,82 @@
 {
-    "extName": { "message": "TTGO Macropad" },
-    "extDescription": { "message": "Conecta el navegador con el TTGO Macropad: portadas y datos de multimedia, capas por sitio, micrófono/cámara de reuniones y control de videos." },
-    "statusConnected": { "message": "Conectada al macropad" },
-    "statusNotPaired": { "message": "Todavía sin vincular" },
-    "statusOffline": { "message": "Vinculada, pero el servicio del macropad no responde" },
-    "pairButton": { "message": "Vincular" },
-    "pairHelp": { "message": "Primero tocá \"Vincular navegador\" en el widget del macropad, y después Vincular acá." },
-    "pairOk": { "message": "¡Vinculada!" },
-    "pairFailed": { "message": "No se pudo vincular. ¿Tocaste antes \"Vincular navegador\" en el widget? (queda abierto 2 minutos)" },
-    "unpairButton": { "message": "Desvincular" },
-    "toastSpeed": { "message": "Velocidad $1×", "placeholders": { "1": { "content": "$1" } } },
-    "toastVolume": { "message": "Volumen de la pestaña $1%", "placeholders": { "1": { "content": "$1" } } }
+    "extName": {
+        "message": "TTGO Macropad"
+    },
+    "extDescription": {
+        "message": "Conecta el navegador con el TTGO Macropad: portadas y datos de multimedia, capas por sitio, micrófono/cámara de reuniones y control de videos."
+    },
+    "statusConnected": {
+        "message": "Conectada al macropad"
+    },
+    "statusNotPaired": {
+        "message": "Todavía sin vincular"
+    },
+    "statusOffline": {
+        "message": "Vinculada, pero el servicio del macropad no responde"
+    },
+    "pairButton": {
+        "message": "Vincular"
+    },
+    "pairHelp": {
+        "message": "Primero tocá \"Vincular navegador\" en el widget del macropad, y después Vincular acá."
+    },
+    "pairOk": {
+        "message": "¡Vinculada!"
+    },
+    "pairFailed": {
+        "message": "No se pudo vincular. ¿Tocaste antes \"Vincular navegador\" en el widget? (queda abierto 2 minutos)"
+    },
+    "unpairButton": {
+        "message": "Desvincular"
+    },
+    "toastSpeed": {
+        "message": "Velocidad $1×",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
+        }
+    },
+    "toastVolume": {
+        "message": "Volumen de la pestaña $1%",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
+        }
+    },
+    "pickButton": {
+        "message": "Elegir un botón de esta página"
+    },
+    "pickHelp": {
+        "message": "Hacé clic en el botón que querés usar desde el macropad (Esc para cancelar)"
+    },
+    "pickName": {
+        "message": "Nombre para este botón (se ve en el macropad):"
+    },
+    "pickSaved": {
+        "message": "Guardado: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
+        }
+    },
+    "clickMissing": {
+        "message": "No encontré \"$1\" en esta página: volvé a elegirlo desde la extensión",
+        "placeholders": {
+            "1": {
+                "content": "$1"
+            }
+        }
+    },
+    "targetsTitle": {
+        "message": "Botones de páginas"
+    },
+    "deleteTarget": {
+        "message": "Borrar"
+    },
+    "noTargets": {
+        "message": "Todavía ninguno."
+    }
 }

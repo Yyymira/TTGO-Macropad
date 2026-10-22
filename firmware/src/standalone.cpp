@@ -22,6 +22,8 @@ static size_t layerCount() { return keymap.is<JsonArray>() ? keymap.as<JsonArray
 
 static String labelFor(JsonVariantConst action) {
     const char *kind = action["a"] | "none";
+    const char *alias = action["l"] | "";
+    if (alias[0] && strcmp(kind, "none") != 0) return alias;
     if (strcmp(kind, "key") == 0) {
         String s;
         for (JsonVariantConst k : action["k"].as<JsonArrayConst>()) {
@@ -30,7 +32,7 @@ static String labelFor(JsonVariantConst action) {
             part.toUpperCase();
             s += part;
         }
-        return s.substring(0, 14);
+        return s.substring(0, 24);
     }
     if (strcmp(kind, "layer_next") == 0) return tr(Str::LayerNext);
     if (strcmp(kind, "layer_prev") == 0) return tr(Str::LayerPrev);
