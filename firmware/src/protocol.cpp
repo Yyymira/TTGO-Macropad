@@ -27,7 +27,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.10.0";
+    doc["fw"] = "1.10.2";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -58,6 +58,8 @@ void protocolSendNet() {
     doc["ble"] = bleConnected();
     doc["weather"] = netGetWeather(w);
     doc["bat"] = batteryOnUsb() ? -1 : batteryPercent();
+    doc["heap"] = ESP.getFreeHeap();
+    mediaDebug(doc["media"].to<JsonObject>());
     sendDoc(doc);
 }
 
@@ -166,7 +168,12 @@ static void handleLine(const String &line) {
     } else if (strcmp(type, "media") == 0) {
         mediaSetInfo(doc);
     } else if (strcmp(type, "art") == 0) {
-        mediaArtChunk(doc);
+        JsonDocument ack;
+        ack["type"] = "art_ack";
+        ack["id"] = doc["id"] | 0;
+        ack["off"] = doc["off"] | 0;
+        ack["ok"] = mediaArtChunk(doc);
+        sendDoc(ack);
     } else if (strcmp(type, "ble") == 0) {
         // Capa con destino "celular": la PC decide qué tecla corresponde y la
         // placa la manda por Bluetooth.

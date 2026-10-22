@@ -26,7 +26,10 @@ VIEW_PRESS_QUIET_S = 0.5
 # (None = la configurada). Es momentáneo: no se guarda en la config.
 VIEW_CYCLE = [None, "stats", "weather", "media"]
 VIEW_NAMES = {None: "Auto", "stats": "Stats", "weather": "Weather", "media": "Media"}
-ART_CHUNK_INTERVAL_MS = 30  # espacio entre pedazos de la tapa, para no llenar el buffer de la placa
+# La placa confirma cada pedazo de la tapa ("art_ack") y recién ahí va el
+# siguiente; si no confirma a tiempo (se perdió o llegó dañado), se reenvía.
+ART_RETRY_MS = 400
+ART_MAX_TRIES = 8
 
 
 def action_label(action: dict, view_override: str | None = None) -> str:
@@ -167,8 +170,9 @@ class Controller(QObject):
         self._art_data: bytes | None = None
         self._art_queue: list[dict] = []
         self._art_timer = QTimer(self)
-        self._art_timer.setInterval(ART_CHUNK_INTERVAL_MS)
+        self._art_timer.setInterval(ART_RETRY_MS)
         self._art_timer.timeout.connect(self._send_art_chunk)
+        self._art_tries = 0
 
         # Extensión del navegador: sitio al frente, multimedia y reunión
         self.browser = BrowserLink()
@@ -336,8 +340,10 @@ class Controller(QObject):
                 self._queue_art(self._art_id, self._art_data)
             self._enter_idle(force=True)
             self._apply_app_layer()
+        elif etype == "art_ack":
+            self._on_art_ack(evt)
         elif etype == "net":
-            self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather", "bat")}
+            self.device_net = {k: evt.get(k) for k in ("wifi", "ip", "ble", "weather", "bat", "heap", "media")}
         elif etype == "button" and evt.get("state") == "down":
             if self._button_kind(evt.get("id", -1)) == "idle_view":
                 # Cambia la pantalla de reposo: no tiene sentido mostrar la capa.
@@ -465,13 +471,30 @@ class Controller(QObject):
 
     def _queue_art(self, art_id: int, data: bytes) -> None:
         self._art_queue = art_chunks(art_id, data)
-        self._art_timer.start()
+        self._art_tries = 0
+        self._send_art_chunk()
 
     def _send_art_chunk(self) -> None:
-        if not self._art_queue:
+        """Manda (o reenvía) el primer pedazo pendiente y espera la confirmación."""
+        if not self._art_queue or self._art_tries >= ART_MAX_TRIES:
+            self._art_queue.clear()
             self._art_timer.stop()
             return
-        self.link.send(self._art_queue.pop(0))
+        self._art_tries += 1
+        self.link.send(self._art_queue[0])
+        self._art_timer.start()
+
+    def _on_art_ack(self, evt: dict) -> None:
+        if not self._art_queue:
+            return
+        head = self._art_queue[0]
+        if evt.get("id") == head["id"] and evt.get("off") == head["off"] and evt.get("ok"):
+            self._art_queue.pop(0)
+            self._art_tries = 0
+            if self._art_queue:
+                self._send_art_chunk()
+            else:
+                self._art_timer.stop()
 
     def _tick(self) -> None:
         self._update_media()

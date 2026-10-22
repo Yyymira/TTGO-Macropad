@@ -5,7 +5,7 @@
 static MediaInfo info;
 static uint16_t artBuf[ART_SIZE * ART_SIZE];
 static uint32_t receivingId = 0;  // tapa que se está recibiendo
-static size_t receivedBytes = 0;
+static uint32_t gotChunks = 0;    // un bit por pedazo recibido bien (los repetidos no molestan)
 static uint32_t readyId = 0;      // tapa completa en artBuf
 static bool changed = false, trackChanged = false;
 
@@ -28,27 +28,28 @@ void mediaSetInfo(JsonDocument &doc) {
     if (track) trackChanged = true;
 }
 
-void mediaArtChunk(JsonDocument &doc) {
+bool mediaArtChunk(JsonDocument &doc) {
     uint32_t id = doc["id"] | 0;
     size_t off = doc["off"] | 0;
     const char *data = doc["d"] | "";
-    if (id == 0) return;
+    if (id == 0 || off >= ART_BYTES || off % ART_CHUNK != 0) return false;
     if (id != receivingId) {
         receivingId = id;
-        receivedBytes = 0;
+        gotChunks = 0;
     }
-    if (off >= ART_BYTES) return;
+    size_t expected = min(ART_CHUNK, ART_BYTES - off);
     size_t written = 0;
     uint8_t *dst = reinterpret_cast<uint8_t *>(artBuf) + off;
     if (mbedtls_base64_decode(dst, ART_BYTES - off, &written, reinterpret_cast<const unsigned char *>(data),
-                              strlen(data)) != 0) {
-        return;  // pedazo corrupto: la tapa queda incompleta y no se muestra
+                              strlen(data)) != 0 || written != expected) {
+        return false;  // pedazo dañado: la PC lo reenvía
     }
-    receivedBytes += written;
-    if (receivedBytes >= ART_BYTES && readyId != id) {
+    gotChunks |= 1UL << (off / ART_CHUNK);
+    if (gotChunks == (1UL << ART_CHUNKS) - 1 && readyId != id) {
         readyId = id;
         if (info.artId == id) changed = trackChanged = true;
     }
+    return true;
 }
 
 const MediaInfo &mediaInfo() { return info; }
@@ -57,6 +58,14 @@ bool mediaPlaying() { return info.active && info.playing; }
 
 const uint16_t *mediaArt() {
     return (info.artId != 0 && readyId == info.artId && receivingId == readyId) ? artBuf : nullptr;
+}
+
+void mediaDebug(JsonObject out) {
+    out["active"] = info.active;
+    out["art"] = info.artId;
+    out["ready"] = readyId;
+    out["rx_id"] = receivingId;
+    out["chunks"] = __builtin_popcount(gotChunks);
 }
 
 bool mediaConsumeChange(bool &track) {
