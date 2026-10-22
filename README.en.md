@@ -26,6 +26,9 @@ Python (Linux/Wayland/KDE, plus Windows).
 - The interface (Plasma widget, Windows app and the board's screen) follows
   your system language. English and Spanish are included; see
   [Language](#language).
+- With the [browser extension](#browser-extension): per-site layers, YouTube
+  covers, video and meeting controls, and any button on a page (like
+  YouTube's Like) on a key.
 
 > **Does your encoder have no push switch?** The EC11 is sold with a push
 > switch (5 pins: 3 on one side, 2 on the other) and without one (3 pins
@@ -301,5 +304,12 @@ Adding a language means adding its texts in three places:
 - [x] "Run command" action and battery indicator.
 - [x] Bluetooth keyboard tested with a phone.
 - [x] Interface in English and Spanish, following the system language.
+- [x] Per-program and per-site layers, PC/phone destination per layer.
+- [x] Media screen with cover art (Spotify, the browser, etc.).
+- [x] Browser extension: YouTube covers, per-site layers, video actions and
+      "Click…" page buttons (tested with YouTube's Like).
+- [x] Per-button alias and labels that always fit on the screen.
+- [ ] Test the meeting indicator with a real Google Meet call (Teams web is
+      experimental).
 - [ ] Check the battery reading while running unplugged.
 - [ ] Test the app on Windows.

@@ -26,6 +26,9 @@ de escritorio en Python (Linux/Wayland/KDE).
 - La interfaz (widget de Plasma, app de Windows y la pantalla de la placa)
   sigue el idioma del sistema: viene en español e inglés. Ver
   [Idioma](#idioma).
+- Con la [extensión del navegador](#extensión-del-navegador): capas por sitio
+  web, portadas de YouTube, control de videos y reuniones, y cualquier botón
+  de una página (como el Me gusta de YouTube) en una tecla.
 
 > **¿Tu encoder no tiene pulsador?** El EC11 se vende con pulsador (5 pines:
 > 3 de un lado y 2 del otro) y sin pulsador (solo 3 pines); los clones baratos
@@ -294,5 +297,13 @@ Para sumar un idioma hay que agregar sus textos en tres lugares:
 - [x] Acción "Ejecutar comando" e indicador de batería.
 - [x] Teclado Bluetooth probado con un celular.
 - [x] Interfaz en español e inglés, según el idioma del sistema.
+- [x] Capas por programa y por sitio web, destino PC/celular por capa.
+- [x] Pantalla de multimedia con portada (Spotify, navegador, etc.).
+- [x] Extensión del navegador: portadas de YouTube, capas por sitio, acciones
+      de video y "Clic en…" botones de páginas (probado con el Me gusta de
+      YouTube).
+- [x] Alias por botón y etiquetas que siempre entran en la pantalla.
+- [ ] Probar el indicador de reuniones con una llamada real de Google Meet
+      (Teams web, experimental).
 - [ ] Verificar la lectura de batería usándola desenchufada.
 - [ ] Probar la app en Windows.
