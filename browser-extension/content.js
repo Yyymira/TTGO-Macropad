@@ -15,11 +15,15 @@
     const send = (msg) => { try { ext.runtime.sendMessage(msg).catch(() => {}); } catch { /* extensión recargada */ } };
 
     // --- multimedia ---
+    // "Sonando" de verdad: en marcha y con sonido. Las vistas previas que
+    // YouTube reproduce al pasar el mouse van silenciadas, y no cuentan.
+    const isPlaying = (m) => !m.paused && !m.ended && !m.muted && m.volume > 0;
+
     function mediaElement() {
         const all = [...document.querySelectorAll("video, audio")].filter((m) => m.duration > 0 || !m.paused);
         if (!all.length) return null;
         // El que está sonando; si no, el video más grande
-        const playing = all.find((m) => !m.paused && !m.ended);
+        const playing = all.find(isPlaying);
         if (playing) return playing;
         return all.sort((a, b) => (b.clientWidth * b.clientHeight) - (a.clientWidth * a.clientHeight))[0];
     }
@@ -44,7 +48,7 @@
                 artist: s.artist || "",
                 album: s.album || "",
                 artwork: s.artwork || "",
-                playing: !m.paused && !m.ended,
+                playing: isPlaying(m),
                 pos: Math.floor(m.currentTime || 0),
                 len: Number.isFinite(m.duration) ? Math.floor(m.duration) : 0,
                 rate: m.playbackRate,

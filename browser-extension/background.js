@@ -62,7 +62,9 @@ function freshest(map, maxAgeMs, prefer = () => false) {
     }
     return best;
 }
-const mediaTab = () => freshest(mediaTabs, 5000, (v) => v.media.playing);
+// Primero la pestaña que el navegador marca con sonido (el parlantito), después las que reproducen.
+const mediaTab = () => freshest(mediaTabs, 5000, (v) => v.media.playing && v.audible) ||
+    freshest(mediaTabs, 5000, (v) => v.media.playing);
 const meetingTab = () => freshest(meetingTabs, 5000);
 
 // --- estado -> servicio ---
@@ -87,7 +89,7 @@ async function push() {
 ext.runtime.onMessage.addListener((msg, sender, reply) => {
     const tabId = sender.tab && sender.tab.id;
     if (msg.type === "media" && tabId !== undefined) {
-        if (msg.media) mediaTabs.set(tabId, { media: msg.media, at: Date.now() });
+        if (msg.media) mediaTabs.set(tabId, { media: msg.media, audible: !!sender.tab.audible, at: Date.now() });
         else mediaTabs.delete(tabId);
         push();
     } else if (msg.type === "meeting" && tabId !== undefined) {

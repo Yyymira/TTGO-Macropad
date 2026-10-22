@@ -2,6 +2,7 @@
 despacho de eventos de botones/encoders a acciones, y empuje continuo de
 stats del sistema a la pantalla idle de la placa."""
 
+import re
 import time
 
 from PySide6.QtCore import QObject, Signal, QTimer
@@ -64,6 +65,16 @@ BROWSER_LABELS = {
 }
 BROWSER_PLAYERS = ("brave", "chrom", "firefox", "vivaldi", "opera", "edge", "plasma-browser-integration")
 BROWSER_MEDIA_MAX_AGE_S = 5  # datos de la extensión más viejos que esto se ignoran
+
+
+def _same_title(a: str, b: str) -> bool:
+    """¿El título del sistema (MPRIS) y el de la extensión son del mismo video?
+    El del sistema suele ser el de la pestaña: "(38) Tema - YouTube"."""
+    def norm(t: str) -> str:
+        t = re.sub(r"^\(\d+\)\s*|\s+-\s+youtube( music)?$", "", ascii_text(t).lower())
+        return re.sub(r"[^a-z0-9]+", " ", t).strip()
+    a, b = norm(a), norm(b)
+    return bool(a and b) and (a in b or b in a)
 
 
 def layer_to_phone(layer: dict) -> bool:
@@ -237,6 +248,18 @@ class Controller(QObject):
             self._meeting = meeting
             self.link.send({"type": "meet", **meeting})
 
+    @property
+    def browser_site(self) -> str:
+        return self._browser_site
+
+    def browser_media_summary(self) -> dict | None:
+        """Lo último que mandó la extensión sobre multimedia (para diagnóstico)."""
+        bm = self._browser_media
+        if not bm:
+            return None
+        return {"title": bm.get("title", ""), "artist": bm.get("artist", ""), "artwork": bm.get("artwork", ""),
+                "age_s": round(time.monotonic() - self._browser_media_at, 1), "art_id": self._art_id}
+
     def _merge_browser_media(self, info: dict | None) -> dict | None:
         """Si lo que suena es el navegador, los datos de la extensión son mejores
         (título limpio, canal, tapa, posición)."""
@@ -245,6 +268,8 @@ class Controller(QObject):
             return info
         if info is not None and not any(p in info.get("player", "") for p in BROWSER_PLAYERS):
             return info  # suena otro reproductor (Spotify, VLC...)
+        if info is not None and not _same_title(info.get("title", ""), str(bm.get("title", ""))):
+            return info  # la extensión habla de otra pestaña: mejor sin tapa que con la equivocada
         merged = dict(info or {})
         merged.update(
             playing=bool(bm.get("playing", merged.get("playing", False))),

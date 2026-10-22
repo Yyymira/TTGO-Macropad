@@ -166,7 +166,9 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                     "device_net": controller.device_net if link.connected else {},
                     "active_app": controller.active_app,
                     "browser": {"connected": controller.browser.connected(),
-                                "pairing": controller.browser.pairing_open()},
+                                "pairing": controller.browser.pairing_open(),
+                                "site": controller.browser_site,
+                                "media": controller.browser_media_summary()},
                 })
             elif self.path == "/config":
                 self._send(200, controller.config)
