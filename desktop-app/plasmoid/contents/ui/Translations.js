@@ -26,6 +26,7 @@ const TRANSLATIONS = {
         "Meeting: camera": "Reunión: cámara",
         "Click a page button…": "Clic en un botón de una página…",
         "Choose buttons from the extension": "Elegí botones desde la extensión",
+        "Choose…": "Elegí…",
         "Browser extension: connected": "Extensión del navegador: conectada",
         "Browser extension: not connected": "Extensión del navegador: sin conectar",
         "Now press Pair in the browser extension…": "Ahora tocá Vincular en la extensión del navegador…",

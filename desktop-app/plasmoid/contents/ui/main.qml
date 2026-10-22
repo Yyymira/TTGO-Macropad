@@ -415,17 +415,28 @@ PlasmoidItem {
                                 Layout.fillWidth: true
                                 model: root.browserActionNames
                                 currentIndex: Math.max(0, root.browserActions.indexOf(brow.act.cmd || ""))
-                                onActivated: (i) => { root.setButtonField(brow.index, "cmd", root.browserActions[i]); root.rev++ }
+                                onActivated: (i) => {
+                                    root.setButtonField(brow.index, "cmd", root.browserActions[i])
+                                    // "Clic en…": arrancar con el primer botón guardado, para que nunca quede vacío
+                                    const first = root.browserTargets[0]
+                                    if (root.browserActions[i] === "click" && first && !brow.act.target) {
+                                        root.setButtonField(brow.index, "target", first.id)
+                                        root.setButtonField(brow.index, "target_name", first.name)
+                                    }
+                                    root.rev++
+                                }
                             }
                             // "Clic en…": cuál de los botones guardados en la extensión
                             PC3.ComboBox {
                                 visible: brow.act.action === "browser" && brow.act.cmd === "click"
                                 Layout.fillWidth: true
+                                // El primer elemento es "Elegí…": así se nota si todavía no hay uno asignado
                                 readonly property var names: root.browserTargets.map(t => t.name + " (" + t.site + ")")
-                                model: names.length ? names : [brow.act.target_name || T.tr("Choose buttons from the extension")]
-                                currentIndex: Math.max(0, root.browserTargets.findIndex(t => t.id === brow.act.target))
+                                model: names.length ? [T.tr("Choose…")].concat(names)
+                                                    : [brow.act.target_name || T.tr("Choose buttons from the extension")]
+                                currentIndex: names.length ? root.browserTargets.findIndex(t => t.id === brow.act.target) + 1 : 0
                                 onActivated: (i) => {
-                                    const t = root.browserTargets[i]
+                                    const t = root.browserTargets[i - 1]
                                     if (!t) return
                                     root.setButtonField(brow.index, "target", t.id)
                                     root.setButtonField(brow.index, "target_name", t.name)
