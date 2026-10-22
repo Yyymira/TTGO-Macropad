@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 from macropad.config import load_config, save_config
 from macropad.i18n import LANG, tr
 from macropad.injector import KeyInjector
+from macropad.media import ArtLoader, MediaReader, art_chunks, ascii_text, media_title
 from macropad.runner import run_command
 from macropad.serial_link import SerialLink
 from macropad.stats import StatsReader
@@ -21,8 +22,9 @@ VIEW_PRESS_QUIET_S = 0.5
 
 # Acción "idle_view": cada pulsación fija la pantalla de reposo en la siguiente
 # (None = la configurada). Es momentáneo: no se guarda en la config.
-VIEW_CYCLE = [None, "stats", "weather"]
-VIEW_NAMES = {None: "Auto", "stats": "Stats", "weather": "Weather"}
+VIEW_CYCLE = [None, "stats", "weather", "media"]
+VIEW_NAMES = {None: "Auto", "stats": "Stats", "weather": "Weather", "media": "Media"}
+ART_CHUNK_INTERVAL_MS = 30  # espacio entre pedazos de la tapa, para no llenar el buffer de la placa
 
 
 def action_label(action: dict, view_override: str | None = None) -> str:
@@ -91,6 +93,7 @@ def settings_message(config: dict) -> dict:
         "lang": LANG,  # idioma de la pantalla de la placa
         "stats_secs": device.get("stats_secs", 10),
         "weather_secs": device.get("weather_secs", 10),
+        "media_secs": device.get("media_secs", 10),
     }
     if device.get("lat") is not None and device.get("lon") is not None:
         msg["lat"] = device["lat"]
@@ -123,6 +126,20 @@ class Controller(QObject):
         self._manual_layer = 0  # a la que se vuelve al salir del programa
         self.view_override: str | None = None  # pantalla de reposo fijada con un botón
         self._quiet_until = 0.0  # hasta cuándo los giros no cuentan como actividad
+
+        # Pantalla de multimedia: qué suena y la tapa
+        self.media = MediaReader()
+        self.art_loader = ArtLoader()
+        self.art_loader.loaded.connect(self._on_art_loaded)
+        self._last_media_msg: dict | None = None
+        self._art_url = ""
+        self._art_id = 0  # id de la tapa actual en la placa (0 = sin tapa)
+        self._art_counter = 0
+        self._art_data: bytes | None = None
+        self._art_queue: list[dict] = []
+        self._art_timer = QTimer(self)
+        self._art_timer.setInterval(ART_CHUNK_INTERVAL_MS)
+        self._art_timer.timeout.connect(self._send_art_chunk)
 
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
@@ -217,6 +234,9 @@ class Controller(QObject):
             self._app_match = -1
             self._sync_device()
             self.link.send({"type": "view", "value": self.view_override or "auto"})
+            self._last_media_msg = None  # la placa perdió lo que sonaba y la tapa: reenviar
+            if self._art_data:
+                self._queue_art(self._art_id, self._art_data)
             self._enter_idle(force=True)
             self._apply_app_layer()
         elif etype == "net":
@@ -312,7 +332,45 @@ class Controller(QObject):
         )
         self.layer_changed.emit(self.layer_index, layer.get("name", ""))
 
+    # ---------------- multimedia ----------------
+
+    def _update_media(self) -> None:
+        info = self.media.read()
+        url = info["art_url"] if info else ""
+        if url != self._art_url:
+            self._art_url = url
+            self._art_id, self._art_data = 0, None
+            self._art_queue.clear()
+            if url:
+                self.art_loader.request(url)
+        msg = {"type": "media", "active": info is not None, "art": self._art_id}
+        if info:
+            msg.update(playing=info["playing"], title=media_title(info["title"]), artist=ascii_text(info["artist"]),
+                       album=ascii_text(info["album"]), pos=info["pos"], len=info["len"])
+        if msg != self._last_media_msg:
+            self._last_media_msg = msg
+            self.link.send(msg)
+
+    def _on_art_loaded(self, url: str, data) -> None:
+        if url != self._art_url or not data:
+            return
+        self._art_counter += 1
+        self._art_id, self._art_data = self._art_counter, data
+        self._queue_art(self._art_id, data)
+        self._last_media_msg = None  # mandar el id nuevo de la tapa en el próximo tick
+
+    def _queue_art(self, art_id: int, data: bytes) -> None:
+        self._art_queue = art_chunks(art_id, data)
+        self._art_timer.start()
+
+    def _send_art_chunk(self) -> None:
+        if not self._art_queue:
+            self._art_timer.stop()
+            return
+        self.link.send(self._art_queue.pop(0))
+
     def _tick(self) -> None:
+        self._update_media()
         if self.mode == "idle":
             self.last_stats = self.stats.read()
             self.link.send({"type": "stats", **self.last_stats})

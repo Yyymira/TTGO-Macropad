@@ -22,6 +22,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "Auto": "Auto",
         "Stats": "Stats",
         "Weather": "Clima",
+        "Media": "Multimedia",
         "Switch idle screen": "Cambiar pantalla de reposo",
         # config por defecto
         "Browser": "Navegador",

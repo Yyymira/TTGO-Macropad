@@ -470,25 +470,27 @@ PlasmoidItem {
                             onActivated: (i) => { root.setDevice("idle_view", root.idleViews[i]); root.rev++ }
                         }
                     }
-                    // Modo "ambos": cuánto dura cada pantalla
-                    RowLayout {
+                    // Modo "ambos": cuánto dura cada pantalla (multimedia solo mientras suena algo)
+                    GridLayout {
                         Layout.fillWidth: true
                         visible: (root.deviceAt(root.rev).idle_view || "both") === "both"
-                        PC3.Label { text: T.tr("Stats for"); Layout.fillWidth: true }
-                        PC3.SpinBox {
-                            from: 2
-                            to: 3600
-                            value: root.deviceAt(root.rev).stats_secs || 10
-                            onValueModified: root.setDevice("stats_secs", value)
+                        columns: 3
+                        Repeater {
+                            model: [["stats_secs", T.tr("Stats for")], ["weather_secs", T.tr("Weather for")],
+                                    ["media_secs", T.tr("Media (while playing) for")]]
+                            delegate: RowLayout {
+                                required property var modelData
+                                Layout.columnSpan: 3
+                                PC3.Label { text: modelData[1]; Layout.fillWidth: true }
+                                PC3.SpinBox {
+                                    from: 2
+                                    to: 3600
+                                    value: root.deviceAt(root.rev)[modelData[0]] || 10
+                                    onValueModified: root.setDevice(modelData[0], value)
+                                }
+                                PC3.Label { text: "s" }
+                            }
                         }
-                        PC3.Label { text: T.tr("s, weather for") }
-                        PC3.SpinBox {
-                            from: 2
-                            to: 3600
-                            value: root.deviceAt(root.rev).weather_secs || 10
-                            onValueModified: root.setDevice("weather_secs", value)
-                        }
-                        PC3.Label { text: "s" }
                     }
                     PC3.Label {
                         Layout.fillWidth: true

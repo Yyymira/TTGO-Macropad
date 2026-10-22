@@ -4,6 +4,7 @@
 #include "ble_kbd.h"
 #include "config.h"
 #include "i18n.h"
+#include "media.h"
 #include "net.h"
 #include "settings.h"
 
@@ -21,7 +22,11 @@ static bool hostPresent = false;
 static bool layerToPhone = false;  // capa con destino celular (con la PC presente)
 static int8_t viewOverride = -1;   // pantalla de reposo fijada desde un botón
 static bool showingWeather = false;
-static uint8_t bothPhase = 0;  // modo "ambos": 0 = stats, 1 = clima
+static bool showingMedia = false;
+// Pantallas de reposo. En modo "ambos" rotan Stats -> Clima -> Multimedia (esta
+// última solo mientras suena algo); el botón del pin puede fijar cualquiera.
+enum IdleScreen : uint8_t { ScreenStats = 0, ScreenWeather = 1, ScreenMedia = 2 };
+static uint8_t bothPhase = ScreenStats;
 static uint32_t lastPhaseMs = 0;
 static int lastDrawnMinute = -1;
 static bool otaActive = false;
@@ -233,6 +238,7 @@ static void renderLowBattery() {
 
 static void renderWeather() {
     showingWeather = true;
+    showingMedia = false;
     tft.fillScreen(TFT_BLACK);
     tft.setTextDatum(TL_DATUM);
 
@@ -322,6 +328,7 @@ static void renderWeather() {
 
 static void renderStats() {
     showingWeather = false;
+    showingMedia = false;
     tft.fillScreen(TFT_BLACK);
 
     if (statCpu < 0) {
@@ -351,14 +358,128 @@ static void renderStats() {
     tft.drawString("GPU " + String(statGpuTemp) + "C", 184, 114);
 }
 
-static bool idleShowsWeather() {
-    if (!hostPresent) return true;
-    if (viewOverride >= 0) return viewOverride == 1;
+static IdleScreen idleScreen() {
+    if (!hostPresent) return ScreenWeather;
+    if (viewOverride >= 0) return static_cast<IdleScreen>(viewOverride);
     switch (settings.idleView) {
-        case IdleView::Stats: return false;
-        case IdleView::Weather: return true;
-        default: return bothPhase == 1;
+        case IdleView::Stats: return ScreenStats;
+        case IdleView::Weather: return ScreenWeather;
+        default: return static_cast<IdleScreen>(bothPhase);
     }
+}
+
+static uint16_t phaseSeconds(uint8_t phase) {
+    return phase == ScreenStats ? settings.statsSec : phase == ScreenWeather ? settings.weatherSec : settings.mediaSec;
+}
+
+// ------------------------------ multimedia ----------------------------
+
+static String fitText(String s, int font, int maxW) {
+    if (tft.textWidth(s, font) <= maxW) return s;
+    while (s.length() > 0 && tft.textWidth(s + "...", font) > maxW) s.remove(s.length() - 1);
+    return s + "...";
+}
+
+static String clock(int32_t secs) {
+    if (secs < 0) secs = 0;
+    char buf[12];
+    if (secs >= 3600) {
+        snprintf(buf, sizeof buf, "%d:%02d:%02d", (int)(secs / 3600), (int)(secs / 60 % 60), (int)(secs % 60));
+    } else {
+        snprintf(buf, sizeof buf, "%d:%02d", (int)(secs / 60), (int)(secs % 60));
+    }
+    return buf;
+}
+
+static const int MEDIA_TX = 110, MEDIA_TW = 126;  // columna de texto a la derecha de la tapa
+
+// Barra de progreso, tiempos y el botón de play/pausa: lo que cambia cada segundo.
+static void drawMediaProgress() {
+    const MediaInfo &m = mediaInfo();
+    tft.fillRect(0, 76, 240, 59, TFT_BLACK);
+
+    // Controles (solo muestran el estado; se manejan con las teclas)
+    const int cy = 88;
+    uint16_t c = TFT_SILVER;
+    tft.fillTriangle(MEDIA_TX + 20, cy - 6, MEDIA_TX + 20, cy + 6, MEDIA_TX + 12, cy, c);  // anterior
+    tft.fillRect(MEDIA_TX + 10, cy - 6, 2, 13, c);
+    int px = MEDIA_TX + 58;
+    if (m.playing) {  // pausa
+        tft.fillRect(px - 6, cy - 7, 4, 15, TFT_WHITE);
+        tft.fillRect(px + 2, cy - 7, 4, 15, TFT_WHITE);
+    } else {  // play
+        tft.fillTriangle(px - 5, cy - 8, px - 5, cy + 8, px + 7, cy, TFT_WHITE);
+    }
+    tft.fillTriangle(MEDIA_TX + 96, cy - 6, MEDIA_TX + 96, cy + 6, MEDIA_TX + 104, cy, c);  // siguiente
+    tft.fillRect(MEDIA_TX + 104, cy - 6, 2, 13, c);
+
+    // Progreso
+    int pct = m.len > 0 ? constrain(m.pos * 100 / m.len, 0, 100) : 0;
+    drawBar(6, 109, 228, 7, pct, TFT_GREEN);
+    tft.setTextFont(1);
+    tft.setTextColor(TFT_SILVER, TFT_BLACK);
+    tft.setTextDatum(TL_DATUM);
+    tft.drawString(clock(m.pos), 6, 122);
+    if (m.len > 0) {
+        tft.setTextDatum(TR_DATUM);
+        tft.drawString(clock(m.len), 234, 122);
+    }
+    tft.setTextDatum(TL_DATUM);
+}
+
+static void renderMedia() {
+    showingWeather = false;
+    showingMedia = true;
+    tft.fillScreen(TFT_BLACK);
+    const MediaInfo &m = mediaInfo();
+
+    // Tapa, o una nota musical si no hay
+    if (const uint16_t *art = mediaArt()) {
+        bool swap = tft.getSwapBytes();
+        tft.setSwapBytes(true);
+        tft.pushImage(6, 6, ART_SIZE, ART_SIZE, art);
+        tft.setSwapBytes(swap);
+    } else {
+        tft.fillRoundRect(6, 6, ART_SIZE, ART_SIZE, 6, tft.color565(40, 40, 48));
+        tft.fillCircle(46, 70, 9, TFT_DARKGREY);
+        tft.fillRect(53, 28, 4, 43, TFT_DARKGREY);
+        tft.fillTriangle(57, 28, 57, 42, 70, 36, TFT_DARKGREY);
+    }
+
+    tft.setTextDatum(TL_DATUM);
+    if (!m.active) {
+        tft.setTextFont(2);
+        tft.setTextColor(TFT_SILVER, TFT_BLACK);
+        tft.drawString(fitText(tr(Str::NothingPlaying), 2, MEDIA_TW), MEDIA_TX, 40);
+        drawViewIndicator(228, 2);
+        return;
+    }
+
+    // Título en hasta 2 líneas, cortando entre palabras
+    tft.setTextFont(2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    String title = m.title, line1 = title, line2 = "";
+    if (tft.textWidth(title, 2) > MEDIA_TW) {
+        int cut = title.length();
+        while (cut > 0 && tft.textWidth(title.substring(0, cut), 2) > MEDIA_TW) {
+            int sp = title.lastIndexOf(' ', cut - 1);
+            cut = sp > 0 ? sp : cut - 1;
+        }
+        line1 = title.substring(0, cut);
+        line2 = title.substring(cut);
+        line2.trim();
+    }
+    tft.drawString(fitText(line1, 2, MEDIA_TW), MEDIA_TX, 6);
+    if (line2.length()) tft.drawString(fitText(line2, 2, MEDIA_TW), MEDIA_TX, 22);
+
+    tft.setTextColor(TFT_CYAN, TFT_BLACK);
+    tft.drawString(fitText(m.artist, 2, MEDIA_TW), MEDIA_TX, 42);
+    tft.setTextFont(1);
+    tft.setTextColor(TFT_SILVER, TFT_BLACK);
+    tft.drawString(fitText(m.album, 1, MEDIA_TW), MEDIA_TX, 62);
+
+    drawMediaProgress();
+    drawViewIndicator(116, 120);  // abajo al centro, entre los tiempos
 }
 
 // Etiqueta centrada en su celda; si no entra con la fuente normal, usa la chica.
@@ -370,6 +491,7 @@ static void drawCell(const String &label, int x, int y, int w, int h) {
 
 static void renderLayer() {
     showingWeather = false;
+    showingMedia = false;
     tft.fillScreen(TFT_BLACK);
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
@@ -419,10 +541,12 @@ static void render() {
     }
     if (currentMode == DisplayMode::Layer) {
         renderLayer();
-    } else if (idleShowsWeather()) {
-        renderWeather();
     } else {
-        renderStats();
+        switch (idleScreen()) {
+            case ScreenWeather: renderWeather(); break;
+            case ScreenMedia: renderMedia(); break;
+            default: renderStats(); break;
+        }
     }
 }
 
@@ -443,11 +567,26 @@ void displayLoop() {
     if (otaActive) return;
     uint32_t now = millis();
 
-    uint32_t phaseMs = 1000UL * (bothPhase == 0 ? settings.statsSec : settings.weatherSec);
-    if (hostPresent && viewOverride < 0 && settings.idleView == IdleView::Both && now - lastPhaseMs >= phaseMs) {
-        lastPhaseMs = now;
-        bothPhase ^= 1;
-        if (currentMode == DisplayMode::Idle) render();
+    // Modo "ambos": Stats -> Clima -> Multimedia (si suena algo). Si la música
+    // se detiene mientras se ve la multimedia, pasa enseguida a la siguiente.
+    if (hostPresent && viewOverride < 0 && settings.idleView == IdleView::Both) {
+        bool mediaGone = bothPhase == ScreenMedia && !mediaPlaying();
+        if (mediaGone || now - lastPhaseMs >= 1000UL * phaseSeconds(bothPhase)) {
+            lastPhaseMs = now;
+            bothPhase = (bothPhase + 1) % 3;
+            if (bothPhase == ScreenMedia && !mediaPlaying()) bothPhase = ScreenStats;
+            if (currentMode == DisplayMode::Idle) render();
+        }
+    }
+
+    bool trackChanged = false;
+    if (mediaConsumeChange(trackChanged) && currentMode == DisplayMode::Idle && showingMedia) {
+        if (trackChanged) {
+            render();
+        } else {
+            drawMediaProgress();
+            drawViewIndicator(116, 120);
+        }
     }
 
     if (currentMode == DisplayMode::Idle && showingWeather) {
@@ -518,7 +657,7 @@ void displaySetStats(int cpu, int ram, int cpuTemp, int gpu, int gpuTemp, int vr
     statGpu = gpu;
     statGpuTemp = gpuTemp;
     statVram = vram;
-    if (currentMode == DisplayMode::Idle && !idleShowsWeather()) render();
+    if (currentMode == DisplayMode::Idle && idleScreen() == ScreenStats) render();
 }
 
 void displaySetLayer(uint8_t index, const String &name, const String labels[NUM_BUTTONS]) {

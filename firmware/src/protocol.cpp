@@ -2,6 +2,7 @@
 
 #include "battery.h"
 #include "ble_kbd.h"
+#include "media.h"
 #include "config.h"
 #include "display.h"
 #include "net.h"
@@ -26,7 +27,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.8.2";
+    doc["fw"] = "1.9.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -95,9 +96,11 @@ static void applySettings(JsonDocument &doc) {
 
     uint16_t statsSec = constrain(doc["stats_secs"] | 10, 2, 3600);
     uint16_t weatherSec = constrain(doc["weather_secs"] | 10, 2, 3600);
-    if (statsSec != settings.statsSec || weatherSec != settings.weatherSec) {
+    uint16_t mediaSec = constrain(doc["media_secs"] | 10, 2, 3600);
+    if (statsSec != settings.statsSec || weatherSec != settings.weatherSec || mediaSec != settings.mediaSec) {
         settings.statsSec = statsSec;
         settings.weatherSec = weatherSec;
+        settings.mediaSec = mediaSec;
         changed = true;
     }
 
@@ -156,7 +159,12 @@ static void handleLine(const String &line) {
         const char *value = doc["value"] | "auto";
         displaySetViewOverride(strcmp(value, "stats") == 0     ? 0
                                : strcmp(value, "weather") == 0 ? 1
+                               : strcmp(value, "media") == 0   ? 2
                                                                : -1);
+    } else if (strcmp(type, "media") == 0) {
+        mediaSetInfo(doc);
+    } else if (strcmp(type, "art") == 0) {
+        mediaArtChunk(doc);
     } else if (strcmp(type, "ble") == 0) {
         // Capa con destino "celular": la PC decide qué tecla corresponde y la
         // placa la manda por Bluetooth.

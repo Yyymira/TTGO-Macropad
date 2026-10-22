@@ -21,6 +21,7 @@ struct DeviceSettings {
     uint16_t idleTimeoutSec = 15;
     uint16_t statsSec = 10;    // modo "ambos": cuánto dura cada pantalla
     uint16_t weatherSec = 10;
+    uint16_t mediaSec = 10;
     Lang lang = Lang::En;
 };
 

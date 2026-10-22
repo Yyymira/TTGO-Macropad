@@ -17,7 +17,7 @@ pero entiende menos teclas (ver [En Windows](#en-windows)).
 | Capa siguiente | Pasa a la capa siguiente; desde la última vuelve a la primera. |
 | Capa anterior | Pasa a la capa anterior; desde la primera va a la última. |
 | Ir a capa… | Salta a una capa fija. **Se cuenta desde 0**: la primera capa es 0, la segunda es 1, etc. |
-| Cambiar pantalla de reposo | Fija la pantalla de reposo por un rato: cada pulsación pasa a **Auto → Stats → Clima → Auto**, y la placa la muestra enseguida. Es momentáneo: no cambia la configuración, y al reiniciar la PC o la placa vuelve a la configurada. En la placa el botón muestra cuál está activa ("Vista: Clima"), y las pantallas de reposo muestran un indicador chico: **A** si alternan solas, un **pin** si quedó fija (naranja si la fijaste con el botón). |
+| Cambiar pantalla de reposo | Fija la pantalla de reposo por un rato: cada pulsación pasa a **Auto → Stats → Clima → Multimedia → Auto**, y la placa la muestra enseguida. Es momentáneo: no cambia la configuración, y al reiniciar la PC o la placa vuelve a la configurada. En la placa el botón muestra cuál está activa ("Vista: Clima"), y las pantallas de reposo muestran un indicador chico: **A** si alternan solas, un **pin** si quedó fija (naranja si la fijaste con el botón). |
 
 Son hasta 10 botones por capa: las 6 teclas, los 2 de la placa y el pulsador de
 cada encoder ("Encoder 1 (apretar)" y "Encoder 2 (apretar)", al apretar la
@@ -89,6 +89,8 @@ el comando tal cual lo escribirías en una terminal:
 
 - Corre con **bash**, como tu usuario y desde tu carpeta personal: funcionan
   `~`, variables, tuberías (`|`), `&&`, etc.
+- Cada comando se lanza como un programa independiente, así que reiniciar o
+  actualizar el servicio del macropad no cierra lo que abriste.
 - Se ejecuta en segundo plano: el macropad no espera a que termine y no se
   ve la salida. Si querés ver qué hace, abrilo en una terminal:
   `konsole --hold -e bash ~/scripts/algo.sh`.

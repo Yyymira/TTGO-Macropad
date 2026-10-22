@@ -17,7 +17,7 @@ understands fewer keys (see [On Windows](#on-windows)).
 | Next layer | Goes to the next layer; from the last one it wraps to the first. |
 | Previous layer | Goes to the previous layer; from the first one it wraps to the last. |
 | Go to layer… | Jumps to a fixed layer. **Counting starts at 0**: the first layer is 0, the second is 1, and so on. |
-| Switch idle screen | Pins the idle screen for a while: each press goes **Auto → Stats → Weather → Auto**, and the board shows it right away. It's temporary: it doesn't change your settings, and restarting the PC or the board goes back to the configured one. On the board, the button shows which one is active ("View: Weather"), and the idle screens show a small indicator: **A** when they alternate on their own, a **pin** when one is fixed (orange if you pinned it with the button). |
+| Switch idle screen | Pins the idle screen for a while: each press goes **Auto → Stats → Weather → Media → Auto**, and the board shows it right away. It's temporary: it doesn't change your settings, and restarting the PC or the board goes back to the configured one. On the board, the button shows which one is active ("View: Weather"), and the idle screens show a small indicator: **A** when they alternate on their own, a **pin** when one is fixed (orange if you pinned it with the button). |
 
 There are up to 10 buttons per layer: the 6 keys, the 2 on the board, and
 each encoder's push switch ("Encoder 1 (press)" and "Encoder 2 (press)",
@@ -92,6 +92,8 @@ the command exactly as you would in a terminal:
 
 - It runs with **bash**, as your user, from your home folder: `~`,
   variables, pipes (`|`), `&&`, etc. all work.
+- Each command is launched as an independent program, so restarting or
+  updating the macropad service doesn't close what you opened.
 - It runs in the background: the macropad doesn't wait for it to finish and
   you don't see the output. To see what it does, open it in a terminal:
   `konsole --hold -e bash ~/scripts/thing.sh`.

@@ -14,7 +14,7 @@ enum class Str : uint8_t {
     BatteryLow, BatteryLeft,
     Updating, UpdateDone, UpdateError,
     SkyClear, SkyMostlyClear, SkyPartlyCloudy, SkyCloudy, SkyFog, SkyDrizzle, SkyRain, SkyShowers, SkySnow,
-    SkyStorm,
+    SkyStorm, NothingPlaying,
     Count
 };
 

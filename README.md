@@ -187,7 +187,14 @@ contraseña y ciudad) y quedan guardados en la placa.
 - **Pantalla de reposo**: con la PC conectada se elige *Solo stats*, *Solo
   reloj y clima* o *Ambos* (alterna; cuánto dura cada pantalla se elige en el
   widget, 10 s por defecto). Un botón con la acción *Cambiar pantalla de
-  reposo* fija una u otra momentáneamente. Si la PC deja de mandar datos
+  reposo* fija una u otra momentáneamente.
+- **Multimedia**: mientras suena algo en la PC (Spotify, el navegador, VLC…),
+  se suma una tercera pantalla al ciclo con la tapa, el título, el artista,
+  el álbum, el progreso y si está en pausa. La PC lee lo que suena por MPRIS
+  (el mismo estándar que usa Plasma), achica la tapa y se la manda a la
+  placa. Los textos se muestran sin tildes (las fuentes de la pantalla son
+  básicas). Por ahora solo en Linux; sin la PC (Bluetooth) no aparece,
+  porque un teclado Bluetooth no puede recibir qué suena en el celular. Si la PC deja de mandar datos
   por 5 s (apagada, servicio detenido, o la placa a batería lejos de la PC),
   queda siempre el reloj con el clima. El clima viene de
   [Open-Meteo](https://open-meteo.com) (gratis, sin API key): temperatura,

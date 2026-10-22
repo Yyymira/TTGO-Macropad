@@ -21,6 +21,7 @@ void settingsLoad() {
     settings.idleTimeoutSec = prefs.getUShort("idle", 15);
     settings.statsSec = prefs.getUShort("tstat", 10);
     settings.weatherSec = prefs.getUShort("twx", 10);
+    settings.mediaSec = prefs.getUShort("tmed", 10);
     settings.lang = static_cast<Lang>(prefs.getUChar("lang", static_cast<uint8_t>(Lang::En)));
     prefs.end();
 }
@@ -37,6 +38,7 @@ void settingsSave() {
     prefs.putUShort("idle", settings.idleTimeoutSec);
     prefs.putUShort("tstat", settings.statsSec);
     prefs.putUShort("twx", settings.weatherSec);
+    prefs.putUShort("tmed", settings.mediaSec);
     prefs.putUChar("lang", static_cast<uint8_t>(settings.lang));
     prefs.end();
 }

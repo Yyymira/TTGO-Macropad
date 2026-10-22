@@ -34,6 +34,7 @@ static const char *const STRINGS[][static_cast<int>(Lang::Count)] = {
     {"Showers",                       "Chaparrones"},
     {"Snow",                          "Nieve"},
     {"Storm",                         "Tormenta"},
+    {"Nothing playing",               "No suena nada"},
 };
 static_assert(sizeof(STRINGS) / sizeof(STRINGS[0]) == static_cast<int>(Str::Count), "falta un texto en STRINGS");
 

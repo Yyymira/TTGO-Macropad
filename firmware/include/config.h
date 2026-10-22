@@ -35,7 +35,7 @@ constexpr uint32_t SERIAL_BAUD = 921600;  // el CH9102 llega a 4 Mbps; debe coin
 // Protocolo: una línea JSON por mensaje, en ambos sentidos. El mensaje más
 // grande es "keymap" (todas las capas), por eso el margen.
 constexpr size_t JSON_LINE_MAX = 4096;
-constexpr size_t SERIAL_RX_BUFFER = 4096;
+constexpr size_t SERIAL_RX_BUFFER = 8192;  // entran los pedazos de la tapa aunque la placa esté dibujando
 
 // Si la PC no manda nada en este tiempo, la placa pasa a modo autónomo:
 // reloj/clima en pantalla y teclas por Bluetooth.
