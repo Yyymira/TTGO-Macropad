@@ -86,6 +86,7 @@ class MediaReader:
                 "pos": int(p.get("Position", 0)) // 1_000_000,
                 "len": int(md.get("mpris:length", 0)) // 1_000_000,
                 "art_url": str(md.get("mpris:artUrl", "")),
+                "player": str(name).lower(),
             }
             if info["playing"]:
                 return info

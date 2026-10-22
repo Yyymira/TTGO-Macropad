@@ -1,0 +1,20 @@
+{
+    "manifest_version": 3,
+    "name": "__MSG_extName__",
+    "description": "__MSG_extDescription__",
+    "version": "1.0.0",
+    "default_locale": "en",
+    "permissions": ["tabs", "storage"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+        "service_worker": "background.js",
+        "scripts": ["background.js"]
+    },
+    "content_scripts": [
+        { "matches": ["http://*/*", "https://*/*"], "js": ["content.js"], "run_at": "document_idle" },
+        { "matches": ["http://*/*", "https://*/*"], "js": ["page.js"], "run_at": "document_idle", "world": "MAIN" }
+    ],
+    "action": { "default_popup": "popup.html", "default_title": "TTGO Macropad", "default_icon": "icon128.png" },
+    "icons": { "128": "icon128.png" },
+    "browser_specific_settings": { "gecko": { "id": "ttgo-macropad@yyymira.github.io", "strict_min_version": "128.0" } }
+}

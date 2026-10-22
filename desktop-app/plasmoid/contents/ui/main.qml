@@ -16,8 +16,8 @@ PlasmoidItem {
     id: root
 
     readonly property string apiBase: "http://127.0.0.1:47823"
-    readonly property var actionKinds: ["none", "key", "command", "layer_next", "layer_prev", "layer_set", "idle_view"]
-    readonly property var actionNames: [T.tr("None"), T.tr("Key / shortcut"), T.tr("Run command"), T.tr("Next layer"), T.tr("Previous layer"), T.tr("Go to layer…"), T.tr("Switch idle screen")]
+    readonly property var actionKinds: ["none", "key", "command", "browser", "layer_next", "layer_prev", "layer_set", "idle_view"]
+    readonly property var actionNames: [T.tr("None"), T.tr("Key / shortcut"), T.tr("Run command"), T.tr("Browser"), T.tr("Next layer"), T.tr("Previous layer"), T.tr("Go to layer…"), T.tr("Switch idle screen")]
     readonly property var buttonNames: [1, 2, 3, 4, 5, 6].map(n => T.tr("Key {n}", {n: n})).concat([
                                         T.tr("Board (GPIO0)"), T.tr("Board (GPIO35)"),
                                         T.tr("Encoder 1 (press)"), T.tr("Encoder 2 (press)")])
@@ -114,6 +114,15 @@ PlasmoidItem {
     }
 
     function activateLayer(i) { api("POST", "/layer", {index: i}, () => poll()) }
+    function openBrowserPairing() { api("POST", "/browser/pairing", {}, () => poll()) }
+
+    // Acciones "Navegador" (las ejecuta la extensión browser-extension/)
+    readonly property var browserActions: ["speed_up", "speed_down", "speed_reset", "seek_forward", "seek_back", "skip_ad",
+                                           "tab_volume_up", "tab_volume_down", "focus_media_tab", "toggle_mic", "toggle_cam"]
+    readonly property var browserActionNames: [T.tr("Video speed +"), T.tr("Video speed -"), T.tr("Video speed 1x"),
+                                               T.tr("Forward 10 s"), T.tr("Back 10 s"), T.tr("Skip ad (YouTube)"),
+                                               T.tr("Tab volume +"), T.tr("Tab volume -"), T.tr("Go to the playing tab"),
+                                               T.tr("Meeting: microphone"), T.tr("Meeting: camera")]
 
     Timer {
         interval: root.expanded ? 1000 : 5000
@@ -161,6 +170,10 @@ PlasmoidItem {
         if (!l) return
         while (l.encoders.length <= i) l.encoders.push({cw: [], ccw: []})
         l.encoders[i].type = type
+        if (type === "browser" && !l.encoders[i].cw_browser) {
+            l.encoders[i].cw_browser = "seek_forward"
+            l.encoders[i].ccw_browser = "seek_back"
+        }
         dirty = true
         rev++
     }
@@ -377,6 +390,7 @@ PlasmoidItem {
                                     const a = {action: kind}
                                     if (kind === "key") a.keys = []
                                     if (kind === "command") a.cmd = ""
+                                    if (kind === "browser") a.cmd = root.browserActions[0]
                                     if (kind === "layer_set") a.index = 0
                                     root.setButton(brow.index, a)
                                 }
@@ -395,6 +409,13 @@ PlasmoidItem {
                                 text: brow.act.cmd || ""
                                 onTextEdited: root.setButtonField(brow.index, "cmd", text)
                             }
+                            PC3.ComboBox {
+                                visible: brow.act.action === "browser"
+                                Layout.fillWidth: true
+                                model: root.browserActionNames
+                                currentIndex: Math.max(0, root.browserActions.indexOf(brow.act.cmd || ""))
+                                onActivated: (i) => root.setButtonField(brow.index, "cmd", root.browserActions[i])
+                            }
                             PC3.SpinBox {
                                 visible: brow.act.action === "layer_set"
                                 from: 0
@@ -403,7 +424,7 @@ PlasmoidItem {
                                 onValueModified: root.setButtonField(brow.index, "index", value)
                             }
                             Item {
-                                visible: ["key", "command", "layer_set"].indexOf(brow.act.action) < 0
+                                visible: ["key", "command", "browser", "layer_set"].indexOf(brow.act.action) < 0
                                 Layout.fillWidth: true
                             }
                         }
@@ -419,17 +440,38 @@ PlasmoidItem {
                             readonly property var enc: root.encoderAt(index, root.rev, root.editLayer)
                             Layout.fillWidth: true
                             readonly property bool isCmd: enc.type === "command"
+                            readonly property bool isBrowser: enc.type === "browser"
                             RowLayout {
                                 Layout.fillWidth: true
                                 PC3.Label { text: root.encoderNames[erow.index]; opacity: 0.8; Layout.fillWidth: true }
                                 PC3.ComboBox {
-                                    model: [T.tr("Keys"), T.tr("Commands")]
-                                    currentIndex: erow.isCmd ? 1 : 0
-                                    onActivated: (i) => root.setEncoderType(erow.index, i === 1 ? "command" : "keys")
+                                    model: [T.tr("Keys"), T.tr("Commands"), T.tr("Browser")]
+                                    currentIndex: erow.isBrowser ? 2 : erow.isCmd ? 1 : 0
+                                    onActivated: (i) => root.setEncoderType(erow.index, ["keys", "command", "browser"][i])
+                                }
+                            }
+                            // Navegador: una acción para cada sentido
+                            RowLayout {
+                                Layout.fillWidth: true
+                                visible: erow.isBrowser
+                                PC3.Label { text: "↻" }
+                                PC3.ComboBox {
+                                    Layout.fillWidth: true
+                                    model: root.browserActionNames
+                                    currentIndex: Math.max(0, root.browserActions.indexOf(erow.enc.cw_browser || ""))
+                                    onActivated: (i) => root.setEncoderKeys(erow.index, "cw_browser", root.browserActions[i])
+                                }
+                                PC3.Label { text: "↺" }
+                                PC3.ComboBox {
+                                    Layout.fillWidth: true
+                                    model: root.browserActionNames
+                                    currentIndex: Math.max(0, root.browserActions.indexOf(erow.enc.ccw_browser || ""))
+                                    onActivated: (i) => root.setEncoderKeys(erow.index, "ccw_browser", root.browserActions[i])
                                 }
                             }
                             RowLayout {
                                 Layout.fillWidth: true
+                                visible: !erow.isBrowser
                                 PC3.Label { text: "↻" }
                                 PC3.TextField {
                                     Layout.fillWidth: true
@@ -498,6 +540,24 @@ PlasmoidItem {
                         wrapMode: Text.WordWrap
                         font: Kirigami.Theme.smallFont
                         text: T.tr("Without the PC, the board always shows clock and weather, and keys go to the phone over Bluetooth.")
+                    }
+                    // Extensión del navegador
+                    RowLayout {
+                        Layout.fillWidth: true
+                        PC3.Label {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            readonly property var b: root.status.browser || {}
+                            text: b.connected ? T.tr("Browser extension: connected")
+                                : b.pairing ? T.tr("Now press Pair in the browser extension…")
+                                : T.tr("Browser extension: not connected")
+                        }
+                        PC3.Button {
+                            text: T.tr("Pair browser")
+                            icon.name: "link"
+                            enabled: root.daemonUp && !(root.status.browser || {}).pairing
+                            onClicked: root.openBrowserPairing()
+                        }
                     }
                     GridLayout {
                         Layout.fillWidth: true

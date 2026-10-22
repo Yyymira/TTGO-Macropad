@@ -21,6 +21,7 @@ static String layerLabels[NUM_BUTTONS];
 static bool hostPresent = false;
 static bool layerToPhone = false;  // capa con destino celular (con la PC presente)
 static int8_t viewOverride = -1;   // pantalla de reposo fijada desde un botón
+static bool meetActive = false, meetMic = false;  // reunión en el navegador (Meet/Teams)
 static bool showingWeather = false;
 static bool showingMedia = false;
 // Pantallas de reposo. En modo "ambos" rotan Stats -> Clima -> Multimedia (esta
@@ -224,6 +225,26 @@ static void drawViewIndicator(int x, int y) {
     }
 }
 
+// Micrófono de la reunión: verde si está abierto, rojo y tachado si está
+// silenciado. Solo aparece durante una reunión. Ocupa 9x12 desde (x, y).
+static void drawMeetIndicator(int x, int y) {
+    if (!meetActive || !hostPresent) return;
+    uint16_t c = meetMic ? TFT_GREEN : TFT_RED;
+    tft.fillRect(x - 1, y, 11, 12, TFT_BLACK);
+    tft.fillRoundRect(x + 2, y, 5, 7, 2, c);  // cápsula
+    tft.drawFastVLine(x, y + 3, 4, c);        // soporte en U
+    tft.drawFastVLine(x + 8, y + 3, 4, c);
+    tft.drawPixel(x + 1, y + 7, c);
+    tft.drawPixel(x + 7, y + 7, c);
+    tft.drawFastHLine(x + 2, y + 8, 5, c);
+    tft.drawFastVLine(x + 4, y + 9, 2, c);    // pie
+    tft.drawFastHLine(x + 2, y + 11, 5, c);
+    if (!meetMic) {
+        tft.drawLine(x - 1, y, x + 9, y + 11, TFT_RED);
+        tft.drawLine(x, y, x + 10, y + 11, TFT_RED);
+    }
+}
+
 static void renderLowBattery() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextDatum(MC_DATUM);
@@ -297,6 +318,8 @@ static void renderWeather() {
         return;
     }
 
+    drawMeetIndicator(228, 1);
+
     // Actual: ícono + temperatura + humedad, a la derecha de la hora.
     drawWeatherIcon(164, 20, 13, w.code);
     drawDegrees(String((int)lroundf(w.temp)), 184, 6, 4, TFT_WHITE);
@@ -342,6 +365,7 @@ static void renderStats() {
     drawGauge(58, 46, 40, 30, statCpu, "CPU");
     drawGauge(182, 46, 40, 30, statGpu, "GPU");
     drawViewIndicator(116, 2);  // arriba al centro, entre los dos gauges
+    drawMeetIndicator(228, 1);
 
     tft.setTextDatum(TL_DATUM);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -480,6 +504,7 @@ static void renderMedia() {
 
     drawMediaProgress();
     drawViewIndicator(116, 120);  // abajo al centro, entre los tiempos
+    drawMeetIndicator(130, 120);
 }
 
 // Etiqueta centrada en su celda; si no entra con la fuente normal, usa la chica.
@@ -497,6 +522,7 @@ static void renderLayer() {
     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
     tft.setTextFont(2);
     tft.drawString(String(tr(Str::Layer)) + " " + String(layerIndex) + ": " + layerName, 8, 4);
+    drawMeetIndicator(228, 4);
 
     if (!hostPresent || layerToPhone) {  // teclas al celular: batería y si hay uno conectado
         drawBattery(170, 7);
@@ -586,6 +612,7 @@ void displayLoop() {
         } else {
             drawMediaProgress();
             drawViewIndicator(116, 120);
+            drawMeetIndicator(130, 120);
         }
     }
 
@@ -628,6 +655,13 @@ void displaySetViewOverride(int8_t view) {
     bothPhase = 0;
     lastPhaseMs = millis();
     if (currentMode == DisplayMode::Idle) render();
+}
+
+void displaySetMeeting(bool active, bool mic) {
+    if (active == meetActive && mic == meetMic) return;
+    meetActive = active;
+    meetMic = mic;
+    render();
 }
 
 void displaySetLayerToPhone(bool toPhone) { layerToPhone = toPhone; }  // se dibuja con displaySetLayer

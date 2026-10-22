@@ -234,6 +234,39 @@ To see the clock while the PC is off, the board needs power: many PCs cut USB
 power when they shut down, so you need a LiPo battery (the TTGO has a
 connector and charger) or a phone charger.
 
+## Browser extension
+
+The `browser-extension/` folder is an extension for Brave, Chrome, Chromium
+(and Firefox 128+) that connects the browser to the macropad. It also works
+with Flatpak browsers, since it only uses the service's local connection.
+
+- **Per-site layers**: in "Switch to this layer automatically with" you can
+  put domains (`youtube.com`, `meet.google.com`). A domain includes its
+  subdomains (`google.com` covers `meet.google.com`), and sites take
+  priority over the browser program itself.
+- **Better media info**: covers from YouTube, YouTube Music, Spotify web,
+  SoundCloud, etc.; a clean title, the channel as the artist, and the exact
+  position.
+- **Meetings**: while you're in Google Meet (or Teams web, experimental), the
+  board shows a microphone, green (open) or red and crossed out (muted), and
+  there are actions to mute the mic or turn off the camera even when the tab
+  isn't in front.
+- **"Browser" action** for buttons and encoders: video speed (+, -, normal),
+  forward/back 10 s, skip YouTube ads, tab volume, go to the playing tab,
+  meeting mic and camera. It acts on the tab that's playing (or the meeting
+  tab), even if you're on another one.
+
+**Installing it** (Brave/Chrome/Chromium): open `brave://extensions` (or
+`chrome://extensions`), turn on **Developer mode**, press **Load unpacked**
+and pick the `browser-extension` folder. On Firefox: `about:debugging` →
+**This Firefox** → **Load Temporary Add-on** and pick `manifest.json` (it
+stays until Firefox restarts).
+
+**Pairing it** (once): in the widget's Device section, press **Pair
+browser**; then press **Pair** in the extension's icon (you have 2 minutes).
+It stores a key only the extension and the service know: without it, no web
+page can talk to the macropad. The extension sends nothing outside your PC.
+
 ## Language
 
 The app, the service, the Plasma widget and the board's screen follow your

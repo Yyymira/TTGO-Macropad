@@ -27,6 +27,7 @@ from PySide6.QtCore import QCoreApplication, QObject, QTimer, Signal
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from macropad.active_window import start_active_window_watcher  # noqa: E402
+from macropad.browser import BrowserLink  # noqa: E402
 from macropad.config import DEFAULT_DEVICE  # noqa: E402
 from macropad.controller import Controller  # noqa: E402
 from macropad.geocode import CityNotFound, geocode  # noqa: E402
@@ -120,7 +121,37 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
 
+        # --- extensión del navegador: autenticada con su propia clave ---
+        def _browser_authorized(self) -> bool:
+            if controller.browser.check_key(self.headers.get("X-Macropad-Key", "")):
+                return True
+            self._send(401, {"error": tr("invalid token")})
+            return False
+
+        def _browser_request(self, method: str) -> bool:
+            """Atiende /browser/*; devuelve False si la ruta no es de la extensión."""
+            browser = controller.browser
+            if method == "POST" and self.path == "/browser/pair":
+                key = browser.pair()
+                self._send(200 if key else 403, {"key": key} if key else {"error": "pairing closed"})
+            elif method == "POST" and self.path == "/browser/state":
+                if self._browser_authorized():
+                    data = self._read_json()
+                    if isinstance(data, dict):
+                        browser.state_received.emit(data)
+                    self._send(200, {"ok": True})
+            elif method == "GET" and self.path == "/browser/poll":
+                if self._browser_authorized():
+                    self._send(200, {"commands": browser.poll()})
+            else:
+                return False
+            return True
+
         def do_GET(self):
+            if self.path.startswith("/browser/"):
+                if not self._browser_request("GET"):
+                    self._send(404, {"error": tr("not found")})
+                return
             if not self._authorized():
                 return
             if self.path == "/status":
@@ -134,6 +165,8 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                     "stats": controller.last_stats,
                     "device_net": controller.device_net if link.connected else {},
                     "active_app": controller.active_app,
+                    "browser": {"connected": controller.browser.connected(),
+                                "pairing": controller.browser.pairing_open()},
                 })
             elif self.path == "/config":
                 self._send(200, controller.config)
@@ -141,7 +174,15 @@ def make_handler(token: str, link: SerialLink, controller: Controller, bridge: B
                 self._send(404, {"error": tr("not found")})
 
         def do_POST(self):
+            if self.path.startswith("/browser/") and self.path != "/browser/pairing":
+                if not self._browser_request("POST"):
+                    self._send(404, {"error": tr("not found")})
+                return
             if not self._authorized():
+                return
+            if self.path == "/browser/pairing":  # el widget abre la ventana de vinculación
+                controller.browser.open_pairing()
+                self._send(200, {"ok": True})
                 return
             data = self._read_json()
             if self.path == "/config":

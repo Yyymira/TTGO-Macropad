@@ -224,6 +224,40 @@ Para ver el reloj con la PC apagada, la placa necesita energía: muchas PCs
 cortan el USB al apagarse, así que hace falta una batería LiPo (la TTGO trae
 conector y cargador) o un cargador de celular.
 
+## Extensión del navegador
+
+La carpeta `browser-extension/` es una extensión para Brave, Chrome, Chromium
+(y Firefox 128+) que conecta el navegador con el macropad. Funciona también
+con navegadores Flatpak, porque solo usa la conexión local del servicio.
+
+- **Capas por sitio web**: en "Pasar a esta capa sola con estos programas"
+  podés poner dominios (`youtube.com`, `meet.google.com`). Un dominio
+  incluye sus subdominios (`google.com` vale para `meet.google.com`), y los
+  sitios tienen prioridad sobre el programa del navegador.
+- **Multimedia mejorada**: portada de YouTube, YouTube Music, Spotify web,
+  SoundCloud, etc.; título limpio, canal como artista y posición exacta.
+- **Reuniones**: mientras estás en Google Meet (o Teams web, experimental),
+  la placa muestra un micrófono verde (abierto) o rojo tachado (silenciado),
+  y hay acciones para silenciar el micrófono o apagar la cámara aunque la
+  pestaña no esté al frente.
+- **Acción "Navegador"** para botones y encoders: velocidad del video
+  (+, -, normal), adelantar/atrasar 10 s, saltar anuncio de YouTube, volumen
+  de la pestaña, ir a la pestaña que suena, micrófono y cámara de la reunión.
+  Actúa sobre la pestaña que está sonando (o la de la reunión), aunque estés
+  en otra.
+
+**Instalarla** (Brave/Chrome/Chromium): abrí `brave://extensions` (o
+`chrome://extensions`), activá el **modo de desarrollador**, tocá **Cargar
+extensión sin empaquetar** y elegí la carpeta `browser-extension`. En Firefox:
+`about:debugging` → **Este Firefox** → **Cargar complemento temporal** y elegí
+`manifest.json` (queda hasta reiniciar Firefox).
+
+**Vincularla** (una sola vez): en el widget, sección Dispositivo, tocá
+**Vincular navegador**; después, en el ícono de la extensión, tocá
+**Vincular** (tenés 2 minutos). Se guarda una clave que solo conocen la
+extensión y el servicio: sin ella, ninguna página web puede hablarle al
+macropad. La extensión no manda nada fuera de tu PC.
+
 ## Idioma
 
 La app, el servicio, el widget de Plasma y la pantalla de la placa siguen el

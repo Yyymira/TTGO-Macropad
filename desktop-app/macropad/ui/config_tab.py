@@ -29,6 +29,7 @@ ACTION_CHOICES = [
     (tr("None"), "none"),
     (tr("Key / shortcut"), "key"),
     (tr("Run command"), "command"),
+    (tr("Browser"), "browser"),
     (tr("Next layer"), "layer_next"),
     (tr("Previous layer"), "layer_prev"),
     (tr("Go to layer N"), "layer_set"),
@@ -40,7 +41,7 @@ def _action_to_combo_value(action: dict) -> tuple[str, str]:
     kind = action.get("action", "none")
     if kind == "key":
         return kind, ",".join(action.get("keys", []))
-    if kind == "command":
+    if kind in ("command", "browser"):
         return kind, action.get("cmd", "")
     if kind == "layer_set":
         return kind, str(action.get("index", 0))
@@ -51,8 +52,8 @@ def _combo_value_to_action(kind: str, value: str) -> dict:
     if kind == "key":
         keys = [k.strip() for k in value.split(",") if k.strip()]
         return {"action": "key", "keys": keys}
-    if kind == "command":
-        return {"action": "command", "cmd": value.strip()}
+    if kind in ("command", "browser"):
+        return {"action": kind, "cmd": value.strip()}
     if kind == "layer_set":
         try:
             idx = int(value.strip() or 0)
@@ -69,7 +70,7 @@ class ButtonRow(QWidget):
         for text, _ in ACTION_CHOICES:
             self.combo.addItem(text)
         self.value_edit = QLineEdit()
-        self.value_edit.setPlaceholderText(tr("e.g. ctrl,t  or  playpause  (or the command to run)"))
+        self.value_edit.setPlaceholderText(tr("e.g. ctrl,t  or  playpause  (or the command to run, or a browser action)"))
 
         row = QHBoxLayout(self)
         row.addWidget(QLabel(label), 0)

@@ -27,7 +27,7 @@ static void sendDoc(JsonDocument &doc) {
 void protocolSendHello() {
     JsonDocument doc;
     doc["type"] = "hello";
-    doc["fw"] = "1.9.0";
+    doc["fw"] = "1.10.0";
     doc["buttons"] = NUM_BUTTONS;
     doc["encoders"] = NUM_ENCODERS;
     sendDoc(doc);
@@ -161,6 +161,8 @@ static void handleLine(const String &line) {
                                : strcmp(value, "weather") == 0 ? 1
                                : strcmp(value, "media") == 0   ? 2
                                                                : -1);
+    } else if (strcmp(type, "meet") == 0) {
+        displaySetMeeting(doc["active"] | false, doc["mic"] | false);
     } else if (strcmp(type, "media") == 0) {
         mediaSetInfo(doc);
     } else if (strcmp(type, "art") == 0) {

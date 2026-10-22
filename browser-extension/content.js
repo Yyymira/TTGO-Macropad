@@ -1,0 +1,146 @@
+// Corre en cada pestaña: informa qué suena (con los datos de page.js) y el
+// estado de las reuniones, y ejecuta las órdenes del macropad sobre el video
+// o la reunión de esta pestaña.
+(() => {
+    const ext = globalThis.browser ?? chrome;
+    const host = location.hostname;
+    let session = null; // datos de navigator.mediaSession que manda page.js
+    let hadMedia = false;
+    let hadMeeting = false;
+
+    window.addEventListener("message", (e) => {
+        if (e.source === window && e.data && e.data.__ttgoMacropad === "mediaSession") session = e.data.data;
+    });
+
+    const send = (msg) => { try { ext.runtime.sendMessage(msg).catch(() => {}); } catch { /* extensión recargada */ } };
+
+    // --- multimedia ---
+    function mediaElement() {
+        const all = [...document.querySelectorAll("video, audio")].filter((m) => m.duration > 0 || !m.paused);
+        if (!all.length) return null;
+        // El que está sonando; si no, el video más grande
+        const playing = all.find((m) => !m.paused && !m.ended);
+        if (playing) return playing;
+        return all.sort((a, b) => (b.clientWidth * b.clientHeight) - (a.clientWidth * a.clientHeight))[0];
+    }
+
+    function cleanTitle(t) {
+        return (t || "").replace(/^\(\d+\)\s*/, "").replace(/\s+-\s+YouTube( Music)?$/, "").trim();
+    }
+
+    function reportMedia() {
+        const m = mediaElement();
+        if (!m) {
+            if (hadMedia) send({ type: "media", media: null });
+            hadMedia = false;
+            return;
+        }
+        hadMedia = true;
+        const s = session || {};
+        send({
+            type: "media",
+            media: {
+                title: cleanTitle(s.title || document.title),
+                artist: s.artist || "",
+                album: s.album || "",
+                artwork: s.artwork || "",
+                playing: !m.paused && !m.ended,
+                pos: Math.floor(m.currentTime || 0),
+                len: Number.isFinite(m.duration) ? Math.floor(m.duration) : 0,
+                rate: m.playbackRate,
+            },
+        });
+    }
+
+    // --- reuniones ---
+    // Google Meet: los botones de micrófono y cámara llevan data-is-muted y su
+    // atajo en el aria-label ("... (ctrl + d)" / "(ctrl + e)"), igual en todos
+    // los idiomas. Teams web: experimental, por los ids de sus botones.
+    function meetingButtons() {
+        if (host === "meet.google.com") {
+            const buttons = [...document.querySelectorAll("button[data-is-muted]")];
+            const by = (k) => buttons.find((b) =>
+                (b.getAttribute("aria-label") || "").toLowerCase().replace(/\s/g, "").includes("+" + k + ")"));
+            const mic = by("d"), cam = by("e");
+            if (!mic) return null;
+            return { mic, cam, isOn: (b) => b && b.getAttribute("data-is-muted") === "false" };
+        }
+        if (/(^|\.)teams\.(microsoft|live)\.com$/.test(host)) {
+            const mic = document.querySelector("#microphone-button, [data-tid='toggle-mute']");
+            const cam = document.querySelector("#video-button, [data-tid='toggle-video']");
+            if (!mic) return null;
+            const isOn = (b) => b && (b.getAttribute("data-state") === "mic" || b.getAttribute("data-state") === "call-video" ||
+                b.getAttribute("aria-checked") === "true" || b.getAttribute("aria-pressed") === "true");
+            return { mic, cam, isOn };
+        }
+        return null;
+    }
+
+    function reportMeeting() {
+        const m = meetingButtons();
+        if (!m) {
+            if (hadMeeting) send({ type: "meeting", meeting: null });
+            hadMeeting = false;
+            return;
+        }
+        hadMeeting = true;
+        send({ type: "meeting", meeting: { mic: m.isOn(m.mic), cam: m.isOn(m.cam) } });
+    }
+
+    setInterval(() => { reportMedia(); reportMeeting(); }, 1000);
+
+    // --- cartelito sobre la página (velocidad, volumen) ---
+    let toastEl = null, toastTimer = 0;
+    function toast(text) {
+        if (!toastEl) {
+            toastEl = document.createElement("div");
+            toastEl.style.cssText = "position:fixed;left:50%;bottom:12%;transform:translateX(-50%);z-index:2147483647;" +
+                "background:rgba(0,0,0,.8);color:#fff;font:600 18px system-ui,sans-serif;padding:8px 16px;" +
+                "border-radius:8px;pointer-events:none;transition:opacity .2s";
+            document.documentElement.appendChild(toastEl);
+        }
+        toastEl.textContent = text;
+        toastEl.style.opacity = "1";
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toastEl.style.opacity = "0"; }, 900);
+    }
+    const msg = (name, value) => ext.i18n.getMessage(name, [String(value)]);
+
+    // --- órdenes del macropad ---
+    const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+    ext.runtime.onMessage.addListener((m) => {
+        if (!m || m.type !== "command") return;
+        const a = m.action;
+        if (a === "toggle_mic" || a === "toggle_cam") {
+            const meet = meetingButtons();
+            const b = meet && (a === "toggle_mic" ? meet.mic : meet.cam);
+            if (b) b.click();
+            setTimeout(reportMeeting, 300);
+            return;
+        }
+        if (a === "skip_ad") {
+            const skip = document.querySelector(".ytp-skip-ad-button, .ytp-ad-skip-button, .ytp-ad-skip-button-modern");
+            if (skip) skip.click();
+            return;
+        }
+        const v = mediaElement();
+        if (!v) return;
+        if (a === "speed_up" || a === "speed_down") {
+            const r = v.playbackRate;
+            const next = a === "speed_up" ? (SPEEDS.find((s) => s > r + 0.001) ?? SPEEDS[SPEEDS.length - 1])
+                                          : ([...SPEEDS].reverse().find((s) => s < r - 0.001) ?? SPEEDS[0]);
+            v.playbackRate = next;
+            toast(msg("toastSpeed", next));
+        } else if (a === "speed_reset") {
+            v.playbackRate = 1;
+            toast(msg("toastSpeed", 1));
+        } else if (a === "seek_forward" || a === "seek_back") {
+            const t = v.currentTime + (a === "seek_forward" ? 10 : -10);
+            v.currentTime = Math.max(0, Number.isFinite(v.duration) ? Math.min(v.duration - 0.5, t) : t);
+        } else if (a === "tab_volume_up" || a === "tab_volume_down") {
+            v.volume = Math.round(Math.min(1, Math.max(0, v.volume + (a === "tab_volume_up" ? 0.1 : -0.1))) * 10) / 10;
+            toast(msg("toastVolume", Math.round(v.volume * 100)));
+        }
+        reportMedia();
+    });
+})();

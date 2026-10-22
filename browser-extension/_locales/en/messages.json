@@ -1,0 +1,14 @@
+{
+    "extName": { "message": "TTGO Macropad" },
+    "extDescription": { "message": "Connects the browser to the TTGO Macropad: covers and media info, per-site layers, meeting mic/camera and video controls." },
+    "statusConnected": { "message": "Connected to the macropad" },
+    "statusNotPaired": { "message": "Not paired yet" },
+    "statusOffline": { "message": "Paired, but the macropad service isn't responding" },
+    "pairButton": { "message": "Pair" },
+    "pairHelp": { "message": "First press \"Pair browser\" in the macropad widget, then press Pair here." },
+    "pairOk": { "message": "Paired!" },
+    "pairFailed": { "message": "Couldn't pair. Did you press \"Pair browser\" in the widget first? (it stays open 2 minutes)" },
+    "unpairButton": { "message": "Unpair" },
+    "toastSpeed": { "message": "Speed $1×", "placeholders": { "1": { "content": "$1" } } },
+    "toastVolume": { "message": "Tab volume $1%", "placeholders": { "1": { "content": "$1" } } }
+}

@@ -6,6 +6,7 @@ import time
 
 from PySide6.QtCore import QObject, Signal, QTimer
 
+from macropad.browser import BrowserLink
 from macropad.config import load_config, save_config
 from macropad.i18n import LANG, tr
 from macropad.injector import KeyInjector
@@ -41,11 +42,28 @@ def action_label(action: dict, view_override: str | None = None) -> str:
         return tr("Layer {n}", n=action.get("index", 0))
     if kind == "command":
         return action.get("cmd", "").strip()[:14]
+    if kind == "browser":
+        return tr(BROWSER_LABELS.get(action.get("cmd", ""), ""))
     return ""
 
 
 def encoder_is_command(mapping: dict) -> bool:
     return mapping.get("type") == "command"
+
+
+def encoder_sends_keys(mapping: dict) -> bool:
+    return mapping.get("type", "keys") == "keys"
+
+
+# Acciones "Navegador" (las ejecuta la extensión): etiqueta corta para la pantalla.
+BROWSER_LABELS = {
+    "speed_up": "Speed +", "speed_down": "Speed -", "speed_reset": "Speed 1x",
+    "seek_forward": ">> 10s", "seek_back": "<< 10s", "skip_ad": "Skip ad",
+    "tab_volume_up": "Tab vol +", "tab_volume_down": "Tab vol -", "focus_media_tab": "Go to tab",
+    "toggle_mic": "Mic", "toggle_cam": "Camera",
+}
+BROWSER_PLAYERS = ("brave", "chrom", "firefox", "vivaldi", "opera", "edge", "plasma-browser-integration")
+BROWSER_MEDIA_MAX_AGE_S = 5  # datos de la extensión más viejos que esto se ignoran
 
 
 def layer_to_phone(layer: dict) -> bool:
@@ -71,7 +89,7 @@ def keymap_message(config: dict) -> dict:
             "b": [_compact_action(a) for a in layer.get("buttons", [])],
             # los comandos solo existen con la PC: en Bluetooth ese encoder no manda nada
             "e": [
-                {"cw": [], "ccw": []} if encoder_is_command(e) else {"cw": e.get("cw", []), "ccw": e.get("ccw", [])}
+                {"cw": e.get("cw", []), "ccw": e.get("ccw", [])} if encoder_sends_keys(e) else {"cw": [], "ccw": []}
                 for e in layer.get("encoders", [])
             ],
         }
@@ -141,6 +159,14 @@ class Controller(QObject):
         self._art_timer.setInterval(ART_CHUNK_INTERVAL_MS)
         self._art_timer.timeout.connect(self._send_art_chunk)
 
+        # Extensión del navegador: sitio al frente, multimedia y reunión
+        self.browser = BrowserLink()
+        self.browser.state_received.connect(self._on_browser_state)
+        self._browser_site = ""
+        self._browser_media: dict | None = None
+        self._browser_media_at = 0.0
+        self._meeting: dict = {}
+
         self.timer = QTimer(self)
         self.timer.setInterval(STATS_PUSH_INTERVAL_MS)
         self.timer.timeout.connect(self._tick)
@@ -178,11 +204,55 @@ class Controller(QObject):
         self._apply_app_layer()
 
     def _layer_for_active_app(self) -> int:
+        layers = [{a.strip().lower() for a in layer.get("apps", []) if a.strip()} for layer in self.config["layers"]]
+        # Primero los sitios (más específicos que el navegador), después los programas.
+        site = self._browser_site
+        if site:
+            for i, apps in enumerate(layers):
+                if any(site == a or site.endswith("." + a) for a in apps):
+                    return i
         active = set(self._active_ids)
-        for i, layer in enumerate(self.config["layers"]):
-            if active & {a.strip().lower() for a in layer.get("apps", []) if a.strip()}:
+        for i, apps in enumerate(layers):
+            if active & apps:
                 return i
         return -1
+
+    # ---------------- extensión del navegador ----------------
+
+    def _on_browser_state(self, data: dict) -> None:
+        site = str(data.get("site") or "").lower().removeprefix("www.")
+        if site != self._browser_site:
+            self._browser_site = site
+            self._apply_app_layer()
+        media = data.get("media")
+        if isinstance(media, dict) and media.get("title"):
+            self._browser_media, self._browser_media_at = media, time.monotonic()
+        elif "media" in data:
+            self._browser_media = None
+        if "meeting" not in data:
+            return
+        meeting = data["meeting"] if isinstance(data["meeting"], dict) else {}
+        meeting = {"active": bool(meeting), "mic": bool(meeting.get("mic")), "cam": bool(meeting.get("cam"))}
+        if meeting != self._meeting:
+            self._meeting = meeting
+            self.link.send({"type": "meet", **meeting})
+
+    def _merge_browser_media(self, info: dict | None) -> dict | None:
+        """Si lo que suena es el navegador, los datos de la extensión son mejores
+        (título limpio, canal, tapa, posición)."""
+        bm = self._browser_media
+        if not bm or time.monotonic() - self._browser_media_at > BROWSER_MEDIA_MAX_AGE_S:
+            return info
+        if info is not None and not any(p in info.get("player", "") for p in BROWSER_PLAYERS):
+            return info  # suena otro reproductor (Spotify, VLC...)
+        merged = dict(info or {})
+        merged.update(
+            playing=bool(bm.get("playing", merged.get("playing", False))),
+            title=str(bm.get("title", "")), artist=str(bm.get("artist", "")), album=str(bm.get("album", "")),
+            pos=int(bm.get("pos", merged.get("pos", 0)) or 0), len=int(bm.get("len", merged.get("len", 0)) or 0),
+            art_url=str(bm.get("artwork") or merged.get("art_url", "")),
+        )
+        return merged
 
     def _apply_app_layer(self) -> None:
         match = self._layer_for_active_app()
@@ -235,6 +305,8 @@ class Controller(QObject):
             self._sync_device()
             self.link.send({"type": "view", "value": self.view_override or "auto"})
             self._last_media_msg = None  # la placa perdió lo que sonaba y la tapa: reenviar
+            if self._meeting:
+                self.link.send({"type": "meet", **self._meeting})
             if self._art_data:
                 self._queue_art(self._art_id, self._art_data)
             self._enter_idle(force=True)
@@ -273,6 +345,8 @@ class Controller(QObject):
             self._send_keys(action.get("keys", []))
         elif kind == "command":
             run_command(action.get("cmd", ""))
+        elif kind == "browser":
+            self.browser.send_command({"action": action.get("cmd", "")})
         elif kind == "idle_view":
             i = VIEW_CYCLE.index(self.view_override)
             self.view_override = VIEW_CYCLE[(i + 1) % len(VIEW_CYCLE)]
@@ -298,6 +372,9 @@ class Controller(QObject):
         mapping = encoders[encoder_id]
         if encoder_is_command(mapping):
             run_command(mapping.get("cw_cmd", "") if delta > 0 else mapping.get("ccw_cmd", ""))
+            return
+        if mapping.get("type") == "browser":
+            self.browser.send_command({"action": mapping.get("cw_browser" if delta > 0 else "ccw_browser", "")})
             return
         keys = mapping.get("cw", []) if delta > 0 else mapping.get("ccw", [])
         self._send_keys(keys)
@@ -335,8 +412,10 @@ class Controller(QObject):
     # ---------------- multimedia ----------------
 
     def _update_media(self) -> None:
-        info = self.media.read()
-        url = info["art_url"] if info else ""
+        info = self._merge_browser_media(self.media.read())
+        url = info.get("art_url", "") if info else ""
+        if url and not url.startswith(("file://", "https://")):
+            url = ""  # solo archivos locales o https (nada de http plano ni esquemas raros)
         if url != self._art_url:
             self._art_url = url
             self._art_id, self._art_data = 0, None
